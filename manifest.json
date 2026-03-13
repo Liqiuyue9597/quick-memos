@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-memos",
+  "name": "Memos",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "A flomo-style quick capture and card view for your vault.",
+  "author": "elissali",
+  "authorUrl": "https://github.com/elissali",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,20 @@
+{
+  "name": "obsidian-memos",
+  "version": "1.0.0",
+  "description": "A flomo-style quick capture and card view for Obsidian.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs dev",
+    "build": "node esbuild.config.mjs production"
+  },
+  "keywords": ["obsidian", "plugin", "memos", "flomo", "capture"],
+  "author": "elissali",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.17.3",
+    "obsidian": "latest",
+    "typescript": "^4.7.4"
+  }
+}
