@@ -5,8 +5,7 @@
     "inlineSources": true,
     "module": "ESNext",
     "target": "ES2018",
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "strictNullChecks": true

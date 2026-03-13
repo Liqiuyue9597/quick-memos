@@ -17,6 +17,30 @@ import {
 
 const VIEW_TYPE_MEMOS = "memos-view";
 
+// Shared tag regex — covers Latin, CJK (Chinese, Japanese, Korean), and common punctuation
+const INLINE_TAG_RE = /#([\w\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af/-]+)/g;
+
+/** Extract inline #tags from text, returning tag names without the leading '#'. */
+function extractInlineTags(text: string): string[] {
+  const tags: string[] = [];
+  let m: RegExpExecArray | null;
+  const re = new RegExp(INLINE_TAG_RE.source, INLINE_TAG_RE.flags);
+  while ((m = re.exec(text)) !== null) {
+    tags.push(m[1]);
+  }
+  return tags;
+}
+
+/** Escape a string for safe insertion into an HTML attribute value. */
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // =============================================================================
 // Interfaces & Defaults
 // =============================================================================
@@ -100,17 +124,20 @@ export default class MemosPlugin extends Plugin {
   async saveMemo(content: string, tags: string[]) {
     const now = new Date();
     const iso = now.toISOString();
-    const dateStr = iso.slice(0, 10);
-    const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, "-");
-    const filename = `memo-${dateStr}-${timeStr}.md`;
+    // Use local time consistently for both date and time portions
+    const pad = (n: number, len = 2) => n.toString().padStart(len, "0");
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const ms = pad(now.getMilliseconds(), 3);
+    const filename = `memo-${dateStr}-${timeStr}-${ms}.md`;
 
     // Build tag list: fixed tag first, then user-provided tags
     const allTags: string[] = [];
     if (this.settings.useFixedTag && this.settings.fixedTag) {
-      allTags.push(this.settings.fixedTag.replace(/^#/, ""));
+      allTags.push(this.settings.fixedTag.replace(/^#+/, ""));
     }
     for (const t of tags) {
-      const clean = t.replace(/^#/, "");
+      const clean = t.replace(/^#+/, "");
       if (clean && !allTags.includes(clean)) {
         allTags.push(clean);
       }
@@ -179,24 +206,38 @@ class MemosView extends ItemView {
     return "sticky-note";
   }
 
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Debounced refresh — coalesces rapid vault events into a single refresh. */
+  private debouncedRefresh() {
+    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null;
+      this.refresh();
+    }, 300);
+  }
+
   async onOpen() {
     this.contentEl.addClass("memos-view");
     await this.refresh();
 
-    // Re-render on vault changes
+    // Re-render on vault changes (debounced)
     this.registerEvent(
-      this.app.vault.on("create", () => this.refresh())
+      this.app.vault.on("create", () => this.debouncedRefresh())
     );
     this.registerEvent(
-      this.app.vault.on("delete", () => this.refresh())
+      this.app.vault.on("delete", () => this.debouncedRefresh())
     );
     this.registerEvent(
-      this.app.vault.on("modify", () => this.refresh())
+      this.app.vault.on("modify", () => this.debouncedRefresh())
     );
   }
 
   async onClose() {
-    // Nothing to clean up
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
   }
 
   async refresh() {
@@ -215,7 +256,7 @@ class MemosView extends ItemView {
     const folder = this.plugin.settings.saveFolder;
     const files = this.app.vault
       .getMarkdownFiles()
-      .filter((f) => f.path.startsWith(folder + "/") || f.path.startsWith(folder));
+      .filter((f) => f.path.startsWith(folder + "/"));
 
     const results: MemoNote[] = [];
 
@@ -244,12 +285,7 @@ class MemosView extends ItemView {
     }
 
     // Extract inline #tags from body
-    const inlineTagRe = /#([\w\u4e00-\u9fa5/-]+)/g;
-    const inlineTags: string[] = [];
-    let m: RegExpExecArray | null;
-    while ((m = inlineTagRe.exec(body)) !== null) {
-      inlineTags.push(m[1]);
-    }
+    const inlineTags = extractInlineTags(body);
 
     // Merge frontmatter tags + inline tags
     const fmTags: string[] = [];
@@ -393,12 +429,15 @@ class MemosView extends ItemView {
     const escaped = content
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
 
+    const re = new RegExp(INLINE_TAG_RE.source, INLINE_TAG_RE.flags);
     const withTags = escaped.replace(
-      /#([\w\u4e00-\u9fa5/-]+)/g,
+      re,
       (_, tag) =>
-        `<span class="memos-inline-tag" data-tag="${tag}">#${tag}</span>`
+        `<span class="memos-inline-tag" data-tag="${escapeHtmlAttr(tag)}">#${tag}</span>`
     );
 
     return withTags.replace(/\n/g, "<br>");
@@ -486,12 +525,13 @@ class CaptureModal extends Modal {
     // Fixed tag hint
     if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
       const hint = contentEl.createDiv({ cls: "memos-capture-hint" });
-      hint.setText(`Fixed tag: #${this.plugin.settings.fixedTag.replace(/^#/, "")}`);
+      hint.setText(`Fixed tag: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`);
     }
 
-    // Shortcut hint
+    // Shortcut hint (platform-aware)
     const shortcutHint = contentEl.createDiv({ cls: "memos-capture-shortcut" });
-    shortcutHint.setText("Ctrl+Enter to save");
+    const isMac = navigator.platform.toUpperCase().includes("MAC");
+    shortcutHint.setText(isMac ? "⌘+Enter to save" : "Ctrl+Enter to save");
 
     // Save button
     const saveBtn = contentEl.createEl("button", {
@@ -526,24 +566,23 @@ class CaptureModal extends Modal {
     const explicitTags = this.parseTags(tagInputValue);
 
     // Also extract inline #tags from content
-    const inlineTagRe = /#([\w\u4e00-\u9fa5/-]+)/g;
-    const inlineTags: string[] = [];
-    let m: RegExpExecArray | null;
-    while ((m = inlineTagRe.exec(trimmed)) !== null) {
-      inlineTags.push(m[1]);
-    }
+    const inlineTags = extractInlineTags(trimmed);
 
     const allTags = Array.from(new Set([...explicitTags, ...inlineTags]));
 
-    await this.plugin.saveMemo(trimmed, allTags);
-    new Notice("Memo saved!");
-    this.close();
+    try {
+      await this.plugin.saveMemo(trimmed, allTags);
+      new Notice("Memo saved!");
+      this.close();
+    } catch (err) {
+      new Notice(`Failed to save memo: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   parseTags(input: string): string[] {
     return input
-      .split(/[\s,]+/)
-      .map((t) => t.replace(/^#/, "").trim())
+      .split(/[\s,，]+/)
+      .map((t) => t.replace(/^#+/, "").trim())
       .filter((t) => t.length > 0);
   }
 
@@ -604,7 +643,7 @@ class MemosSettingTab extends PluginSettingTab {
             .setPlaceholder("memo")
             .setValue(this.plugin.settings.fixedTag)
             .onChange(async (value) => {
-              this.plugin.settings.fixedTag = value.trim().replace(/^#/, "");
+              this.plugin.settings.fixedTag = value.trim().replace(/^#+/, "");
               await this.plugin.saveSettings();
             })
         );

@@ -201,6 +201,9 @@
   font-size: 11px;
   padding: 1px 7px;
   border-radius: 10px;
+  /* Fallback for engines without color-mix() support */
+  background-color: rgba(76, 175, 80, 0.15);
+  color: var(--text-normal);
   background-color: color-mix(in srgb, var(--color-green) 15%, transparent);
   color: color-mix(in srgb, var(--color-green) 90%, var(--text-normal));
   cursor: pointer;
@@ -225,7 +228,7 @@
 
 @keyframes memos-pulse {
   0%   { box-shadow: 0 0 0 2px var(--interactive-accent); }
-  50%  { box-shadow: 0 0 0 5px color-mix(in srgb, var(--interactive-accent) 40%, transparent); }
+  50%  { box-shadow: 0 0 0 5px rgba(var(--interactive-accent-rgb, 72, 128, 255), 0.4); box-shadow: 0 0 0 5px color-mix(in srgb, var(--interactive-accent) 40%, transparent); }
   100% { box-shadow: 0 0 0 2px var(--interactive-accent); }
 }
 
