@@ -536,18 +536,19 @@ class CaptureModal extends Modal {
     const { contentEl } = this;
     contentEl.addClass("memos-capture-modal");
 
-    contentEl.createEl("h3", { text: "New Memo" });
-
+    // Textarea fills available space
     const textarea = contentEl.createEl("textarea", {
       cls: "memos-capture-textarea",
       attr: {
         placeholder: "What's on your mind?",
-        rows: "6",
       },
     });
 
+    // Bottom toolbar: tag input + save button on one row, always visible above keyboard
+    const bottomBar = contentEl.createDiv("memos-capture-bottom-bar");
+
     // Tag input row
-    const tagRow = contentEl.createDiv("memos-capture-tag-row");
+    const tagRow = bottomBar.createDiv("memos-capture-tag-row");
     tagRow.createSpan({ cls: "memos-capture-tag-label", text: "#" });
     const tagInput = tagRow.createEl("input", {
       cls: "memos-capture-tag-input",
@@ -559,17 +560,12 @@ class CaptureModal extends Modal {
 
     // Fixed tag hint
     if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
-      const hint = contentEl.createDiv({ cls: "memos-capture-hint" });
+      const hint = bottomBar.createDiv({ cls: "memos-capture-hint" });
       hint.setText(`Fixed tag: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`);
     }
 
-    // Shortcut hint (platform-aware)
-    const shortcutHint = contentEl.createDiv({ cls: "memos-capture-shortcut" });
-    const isMac = navigator.platform.toUpperCase().includes("MAC");
-    shortcutHint.setText(isMac ? "⌘+Enter to save" : "Ctrl+Enter to save");
-
     // Save button
-    const saveBtn = contentEl.createEl("button", {
+    const saveBtn = bottomBar.createEl("button", {
       cls: "memos-capture-save-btn mod-cta",
       text: "Save",
     });

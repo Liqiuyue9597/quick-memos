@@ -1,4 +1,8 @@
 /* =============================================================================
+   Memos — Subtle Texture Theme
+   ============================================================================= */
+
+/* =============================================================================
    Memos View
    ============================================================================= */
 
@@ -11,19 +15,29 @@
 }
 
 /* =============================================================================
-   Toolbar
+   Toolbar (floating card style)
    ============================================================================= */
 
 .memos-toolbar {
+  margin: 10px 12px 0;
+  padding: 10px 14px;
+  background-color: var(--background-primary-alt);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background-color: var(--background-secondary);
-  border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.theme-dark .memos-toolbar {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .memos-toolbar-left {
@@ -35,26 +49,29 @@
 }
 
 .memos-count {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--text-faint);
   white-space: nowrap;
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
 .memos-active-filter-pill {
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 5px;
+  background-color: var(--text-normal);
+  color: var(--background-primary);
   cursor: pointer;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .memos-filter-clear {
-  margin-left: 2px;
-  opacity: 0.8;
+  margin-left: 3px;
+  opacity: 0.7;
   font-weight: bold;
 }
 
@@ -75,20 +92,27 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: 7px;
   cursor: pointer;
   color: var(--text-muted);
-  transition: color 0.15s ease, background-color 0.15s ease;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  transition: all 0.2s ease;
 }
 
 .memos-toolbar-btn:hover {
   color: var(--text-normal);
-  background-color: var(--background-modifier-hover);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.theme-dark .memos-toolbar-btn:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .memos-toolbar-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 /* =============================================================================
@@ -98,23 +122,14 @@
 .memos-cards-container {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 6px 12px 40px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .memos-cards-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.memos-cards-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.memos-cards-container::-webkit-scrollbar-thumb {
-  background-color: var(--background-modifier-border);
-  border-radius: 3px;
+  width: 0;
 }
 
 /* =============================================================================
@@ -125,56 +140,91 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .memos-date-header {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-  padding: 4px 0 2px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  padding: 14px 4px 2px;
   text-transform: uppercase;
 }
 
 /* =============================================================================
-   Cards
+   Layered Cards
    ============================================================================= */
 
 .memos-card {
   background-color: var(--background-primary-alt);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 13px 15px;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.theme-dark .memos-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+/* Subtle top highlight (paper edge effect) */
+.memos-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  pointer-events: none;
+}
+
+.theme-dark .memos-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
 }
 
 .memos-card:hover {
-  border-color: var(--interactive-accent);
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .memos-card:hover {
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .memos-card-content {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.75;
   color: var(--text-normal);
   word-break: break-word;
   margin-bottom: 8px;
 }
 
 .memos-inline-tag {
-  color: var(--interactive-accent);
+  color: var(--text-muted);
   cursor: pointer;
   font-weight: 500;
+  font-size: 13px;
   border-radius: 3px;
   padding: 0 1px;
-  transition: opacity 0.1s ease;
+  transition: color 0.12s ease;
 }
 
 .memos-inline-tag:hover {
-  opacity: 0.75;
+  color: var(--text-normal);
   text-decoration: underline;
 }
 
@@ -199,20 +249,24 @@
 
 .memos-tag-pill {
   font-size: 11px;
-  padding: 1px 7px;
-  border-radius: 10px;
-  /* Fallback for engines without color-mix() support */
-  background-color: rgba(76, 175, 80, 0.15);
-  color: var(--text-normal);
-  background-color: color-mix(in srgb, var(--color-green) 15%, transparent);
-  color: color-mix(in srgb, var(--color-green) 90%, var(--text-normal));
+  padding: 2px 8px;
+  border-radius: 5px;
+  background-color: var(--background-primary);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
+  font-weight: 400;
 }
 
 .memos-tag-pill:hover {
-  opacity: 0.75;
+  color: var(--text-normal);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .memos-tag-pill:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .memos-card-time {
@@ -220,6 +274,7 @@
   color: var(--text-faint);
   white-space: nowrap;
   flex-shrink: 0;
+  font-weight: 300;
 }
 
 /* =============================================================================
@@ -227,13 +282,12 @@
    ============================================================================= */
 
 @keyframes memos-pulse {
-  0%   { box-shadow: 0 0 0 2px var(--interactive-accent); }
-  50%  { box-shadow: 0 0 0 5px rgba(var(--interactive-accent-rgb, 72, 128, 255), 0.4); box-shadow: 0 0 0 5px color-mix(in srgb, var(--interactive-accent) 40%, transparent); }
-  100% { box-shadow: 0 0 0 2px var(--interactive-accent); }
+  0%   { box-shadow: 0 0 0 2px var(--text-muted); }
+  50%  { box-shadow: 0 0 0 4px var(--background-modifier-border); }
+  100% { box-shadow: 0 0 0 2px var(--text-muted); }
 }
 
 .memos-card-highlighted {
-  border-color: var(--interactive-accent) !important;
   animation: memos-pulse 1.5s ease-in-out 3;
 }
 
@@ -257,23 +311,21 @@
    ============================================================================= */
 
 .memos-capture-modal {
+  display: flex;
+  flex-direction: column;
   padding: 4px;
-}
-
-.memos-capture-modal h3 {
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: var(--text-normal);
+  overflow: hidden;
 }
 
 .memos-capture-textarea {
   width: 100%;
-  min-height: 120px;
-  resize: vertical;
+  flex: 1;
+  min-height: 80px;
+  resize: none;
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-normal);
@@ -284,18 +336,26 @@
 
 .memos-capture-textarea:focus {
   outline: none;
-  border-color: var(--interactive-accent);
+  border-color: var(--text-muted);
+}
+
+/* Bottom bar: stays visible above keyboard */
+.memos-capture-bottom-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
 }
 
 .memos-capture-tag-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
 }
 
 .memos-capture-tag-label {
-  color: var(--interactive-accent);
+  color: var(--text-muted);
   font-weight: 600;
   font-size: 16px;
   flex-shrink: 0;
@@ -314,29 +374,33 @@
 
 .memos-capture-tag-input:focus {
   outline: none;
-  border-color: var(--interactive-accent);
+  border-color: var(--text-muted);
 }
 
 .memos-capture-hint {
-  margin-top: 6px;
   font-size: 12px;
   color: var(--text-faint);
-}
-
-.memos-capture-shortcut {
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--text-faint);
-  text-align: right;
 }
 
 .memos-capture-save-btn {
   display: block;
   width: 100%;
-  margin-top: 12px;
   padding: 8px;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+}
+
+/* Mobile */
+.is-mobile .modal:has(.memos-capture-modal) {
+  max-height: 70vh;
+}
+
+.is-mobile .memos-capture-modal {
+  min-height: 200px;
+}
+
+.is-mobile .memos-capture-textarea {
+  min-height: 60px;
 }
