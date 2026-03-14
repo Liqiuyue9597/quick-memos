@@ -11,7 +11,9 @@ import {
   PluginSettingTab,
   Setting,
   TFile,
+  TFolder,
   WorkspaceLeaf,
+  normalizePath,
   setIcon,
 } from "obsidian";
 
@@ -128,7 +130,7 @@ export default class MemosPlugin extends Plugin {
     // Listen for file-open events → auto-trigger CaptureModal for the entry note
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file && file.path === this.settings.captureNotePath) {
+        if (file && file.path === normalizePath(this.settings.captureNotePath)) {
           new CaptureModal(this.app, this).open();
         }
       })
@@ -142,7 +144,8 @@ export default class MemosPlugin extends Plugin {
   }
 
   onunload() {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_MEMOS);
+    // Intentionally empty — do NOT detach leaves here.
+    // Obsidian restores views in their original positions on plugin reload/update.
   }
 
   async activateView() {
@@ -186,14 +189,14 @@ export default class MemosPlugin extends Plugin {
     const frontmatter = `---\ncreated: ${iso}\ntype: memo\n${tagYaml}\n---\n\n`;
     const fileContent = frontmatter + content;
 
-    const folder = this.settings.saveFolder;
+    const folder = normalizePath(this.settings.saveFolder);
 
     // Ensure folder exists
     if (!this.app.vault.getAbstractFileByPath(folder)) {
       await this.app.vault.createFolder(folder);
     }
 
-    const filePath = `${folder}/${filename}`;
+    const filePath = normalizePath(`${folder}/${filename}`);
     await this.app.vault.create(filePath, fileContent);
 
     // Refresh all open Memos views
@@ -256,15 +259,22 @@ class MemosView extends ItemView {
     this.contentEl.addClass("memos-view");
     await this.refresh();
 
-    // Re-render on vault changes (debounced)
+    // Re-render on vault changes within the save folder (debounced)
+    const folderPrefix = normalizePath(this.plugin.settings.saveFolder) + "/";
     this.registerEvent(
-      this.app.vault.on("create", () => this.debouncedRefresh())
+      this.app.vault.on("create", (file) => {
+        if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
+      })
     );
     this.registerEvent(
-      this.app.vault.on("delete", () => this.debouncedRefresh())
+      this.app.vault.on("delete", (file) => {
+        if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
+      })
     );
     this.registerEvent(
-      this.app.vault.on("modify", () => this.debouncedRefresh())
+      this.app.vault.on("modify", (file) => {
+        if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
+      })
     );
   }
 
@@ -288,10 +298,18 @@ class MemosView extends ItemView {
   }
 
   async loadMemos() {
-    const folder = this.plugin.settings.saveFolder;
-    const files = this.app.vault
-      .getMarkdownFiles()
-      .filter((f) => f.path.startsWith(folder + "/"));
+    const folder = normalizePath(this.plugin.settings.saveFolder);
+    const abstractFolder = this.app.vault.getAbstractFileByPath(folder);
+
+    // Safety: if folder doesn't exist or isn't a TFolder, return empty
+    if (!abstractFolder || !(abstractFolder instanceof TFolder)) {
+      this.memos = [];
+      return;
+    }
+
+    const files = abstractFolder.children.filter(
+      (f): f is TFile => f instanceof TFile && f.name.endsWith(".md")
+    );
 
     const results: MemoNote[] = [];
 
@@ -301,7 +319,7 @@ class MemosView extends ItemView {
       if (!fm || fm["type"] !== "memo") continue;
 
       const raw = await this.app.vault.read(file);
-      const memo = this.parseMemo(file, raw, fm);
+      const memo = this.parseMemo(file, raw, fm, cache);
       results.push(memo);
     }
 
@@ -309,10 +327,16 @@ class MemosView extends ItemView {
     this.memos = results;
   }
 
-  parseMemo(file: TFile, raw: string, fm: Record<string, unknown>): MemoNote {
-    // Strip YAML frontmatter
+  parseMemo(file: TFile, raw: string, fm: Record<string, unknown>, cache?: ReturnType<typeof this.app.metadataCache.getFileCache>): MemoNote {
+    // Strip YAML frontmatter using MetadataCache position when available
     let body = raw;
-    if (raw.startsWith("---")) {
+    const fmEnd = cache?.frontmatterPosition?.end;
+    if (fmEnd) {
+      // frontmatterPosition.end points to the closing '---' line;
+      // offset is the character index right after the closing '---\n'
+      body = raw.slice(fmEnd.offset).trimStart();
+    } else if (raw.startsWith("---")) {
+      // Fallback: manual parsing when cache is unavailable
       const end = raw.indexOf("---", 3);
       if (end !== -1) {
         body = raw.slice(end + 3).trimStart();
@@ -417,18 +441,9 @@ class MemosView extends ItemView {
     const card = el.createDiv("memos-card");
     card.dataset["path"] = memo.file.path;
 
-    // Content area
+    // Content area — built with safe DOM API (no innerHTML)
     const contentDiv = card.createDiv("memos-card-content");
-    contentDiv.innerHTML = this.renderContentWithTags(memo.content);
-
-    // Wire up inline tag clicks
-    contentDiv.querySelectorAll(".memos-inline-tag").forEach((span) => {
-      span.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const tag = (span as HTMLElement).dataset["tag"] ?? null;
-        this.handleTagClick(tag);
-      });
-    });
+    this.renderContentDOM(memo.content, contentDiv);
 
     // Footer
     const footer = card.createDiv("memos-card-footer");
@@ -459,23 +474,39 @@ class MemosView extends ItemView {
     });
   }
 
-  renderContentWithTags(content: string): string {
-    // HTML-escape then replace #tags with clickable spans
-    const escaped = content
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-
+  /** Build card content using safe DOM operations instead of innerHTML. */
+  renderContentDOM(content: string, container: HTMLElement) {
+    const lines = content.split("\n");
     const re = new RegExp(INLINE_TAG_RE.source, INLINE_TAG_RE.flags);
-    const withTags = escaped.replace(
-      re,
-      (_, tag) =>
-        `<span class="memos-inline-tag" data-tag="${escapeHtmlAttr(tag)}">#${tag}</span>`
-    );
 
-    return withTags.replace(/\n/g, "<br>");
+    for (let i = 0; i < lines.length; i++) {
+      if (i > 0) container.createEl("br");
+
+      const line = lines[i];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      re.lastIndex = 0;
+
+      while ((match = re.exec(line)) !== null) {
+        // Text before the tag
+        if (match.index > lastIndex) {
+          container.appendText(line.slice(lastIndex, match.index));
+        }
+        // Clickable tag span
+        const tagName = match[1];
+        const tagSpan = container.createSpan({ cls: "memos-inline-tag", text: `#${tagName}` });
+        tagSpan.dataset["tag"] = tagName;
+        tagSpan.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.handleTagClick(tagName);
+        });
+        lastIndex = re.lastIndex;
+      }
+      // Remaining text after last tag
+      if (lastIndex < line.length) {
+        container.appendText(line.slice(lastIndex));
+      }
+    }
   }
 
   handleTagClick(tag: string | null) {
@@ -515,7 +546,7 @@ class MemosView extends ItemView {
   }
 
   openMemo(file: TFile) {
-    const leaf = this.app.workspace.getLeaf("tab");
+    const leaf = this.app.workspace.getLeaf(false);
     leaf.openFile(file);
   }
 }
@@ -667,7 +698,7 @@ class MemosSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Memos Settings" });
+    new Setting(containerEl).setName("Memos Settings").setHeading();
 
     new Setting(containerEl)
       .setName("Save folder")
