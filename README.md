@@ -1,3 +1,11 @@
+<!-- README.md -->
+
+<div align="center">
+
+**🌐 Read this in other languages:** [English](README.md) | [中文](README.zh-CN.md)
+
+</div>
+
 # obsidian-memos 🧠
 
 > **Flomo-style quick capture for Obsidian** — Capture fleeting thoughts instantly, review them in a beautiful card view.
