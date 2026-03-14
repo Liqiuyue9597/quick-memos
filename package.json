@@ -8,7 +8,7 @@
     "build": "node esbuild.config.mjs production"
   },
   "keywords": ["obsidian", "plugin", "memos", "flomo", "capture"],
-  "author": "elissali",
+  "author": "Liqiuyue9597",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.11.6",
