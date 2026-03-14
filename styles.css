@@ -477,6 +477,7 @@
   grid-auto-columns: 1fr;
   gap: 3px;
   padding-bottom: 4px;
+  max-width: 360px;
 }
 
 .memos-heatmap-cell {
@@ -600,4 +601,193 @@
 
 .memos-date-filter-pill {
   /* Inherits from .memos-active-filter-pill — no extra styles needed */
+}
+
+/* =============================================================================
+   Card Footer Right (time + share button)
+   ============================================================================= */
+
+.memos-card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.memos-card-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.memos-card:hover .memos-card-share-btn {
+  opacity: 1;
+}
+
+.memos-card-share-btn:hover {
+  color: var(--text-muted);
+}
+
+.memos-card-share-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Mobile: always show share button (no hover) */
+.is-mobile .memos-card-share-btn {
+  opacity: 1;
+}
+
+/* =============================================================================
+   Export Modal
+   ============================================================================= */
+
+.memos-export-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  gap: 16px;
+}
+
+.memos-export-preview {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  max-height: 60vh;
+  border-radius: 8px;
+  background: var(--background-modifier-border);
+  padding: 20px;
+}
+
+.memos-export-btn-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.memos-export-btn {
+  flex: 1;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  transition: all 0.15s ease;
+}
+
+.memos-export-btn:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.memos-export-btn.mod-cta {
+  border: none;
+}
+
+/* =============================================================================
+   Export Card Template (rendered to image)
+   Hardcoded colors for deterministic image output.
+   ============================================================================= */
+
+.memos-export-card {
+  width: 440px;
+  padding: 32px 28px 24px;
+  border-radius: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  color: #1a1a1a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.memos-export-dark {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  color: #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.memos-export-content {
+  font-size: 16px;
+  line-height: 1.8;
+  word-break: break-word;
+  margin-bottom: 20px;
+}
+
+.memos-export-inline-tag {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.memos-export-dark .memos-export-inline-tag {
+  color: #9ca3af;
+}
+
+.memos-export-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 14px;
+}
+
+.memos-export-dark .memos-export-meta {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.memos-export-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memos-export-tag-pill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.04);
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.memos-export-dark .memos-export-tag-pill {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}
+
+.memos-export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.memos-export-time {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 300;
+}
+
+.memos-export-dark .memos-export-time {
+  color: #6b7280;
+}
+
+.memos-export-author {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.memos-export-dark .memos-export-author {
+  color: #6b7280;
 }

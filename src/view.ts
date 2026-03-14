@@ -14,6 +14,7 @@ import { parseMemoContent } from "./memo-parser";
 import { computeStats, renderStatsSection } from "./stats";
 import type MemosPlugin from "./plugin";
 import { CaptureModal } from "./capture-modal";
+import { ExportModal } from "./export-image";
 
 export class MemosView extends ItemView {
   plugin: MemosPlugin;
@@ -259,7 +260,10 @@ export class MemosView extends ItemView {
       }
     }
 
-    const time = footer.createSpan({ cls: "memos-card-time" });
+    // Right side of footer: time + share button
+    const footerRight = footer.createDiv("memos-card-footer-right");
+
+    const time = footerRight.createSpan({ cls: "memos-card-time" });
     const d = new Date(memo.created);
     time.setText(
       `${d.getHours().toString().padStart(2, "0")}:${d
@@ -267,6 +271,16 @@ export class MemosView extends ItemView {
         .toString()
         .padStart(2, "0")}`
     );
+
+    const shareBtn = footerRight.createDiv({
+      cls: "memos-card-share-btn",
+      attr: { "aria-label": "Export as image" },
+    });
+    setIcon(shareBtn, "share");
+    shareBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      new ExportModal(this.app, this.plugin, memo).open();
+    });
 
     // Click card → open file
     card.addEventListener("click", () => {

@@ -1,6 +1,6 @@
 {
   "name": "obsidian-memos",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "A flomo-style quick capture and card view for Obsidian.",
   "main": "main.js",
   "scripts": {
@@ -17,6 +17,9 @@
   ],
   "author": "Liqiuyue9597",
   "license": "MIT",
+  "dependencies": {
+    "html-to-image": "^1.11.11"
+  },
   "devDependencies": {
     "@types/node": "^22.19.15",
     "builtin-modules": "^3.3.0",

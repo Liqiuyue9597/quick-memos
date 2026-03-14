@@ -71,5 +71,35 @@ export class MemosSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl).setName("Image export").setHeading();
+
+    new Setting(containerEl)
+      .setName("Show author name")
+      .setDesc("Display your name at the bottom of exported memo images.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showAuthorInExport)
+          .onChange(async (value) => {
+            this.plugin.settings.showAuthorInExport = value;
+            await this.plugin.saveSettings();
+            this.display();
+          })
+      );
+
+    if (this.plugin.settings.showAuthorInExport) {
+      new Setting(containerEl)
+        .setName("Author name")
+        .setDesc("Your name or brand to show on exported images.")
+        .addText((text) =>
+          text
+            .setPlaceholder("Your name")
+            .setValue(this.plugin.settings.authorName)
+            .onChange(async (value) => {
+              this.plugin.settings.authorName = value.trim();
+              await this.plugin.saveSettings();
+            })
+        );
+    }
   }
 }
