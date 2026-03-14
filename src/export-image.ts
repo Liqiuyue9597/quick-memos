@@ -1,9 +1,294 @@
-import { App, Modal, Notice } from "obsidian";
-import { toPng } from "html-to-image";
+import { App, Modal, Notice, Platform } from "obsidian";
 
 import { MemoNote } from "./types";
 import { INLINE_TAG_RE } from "./constants";
 import type MemosPlugin from "./plugin";
+
+/* ---------------------------------------------------------------------------
+   Theme constants for Canvas rendering and DOM preview.
+   --------------------------------------------------------------------------- */
+
+interface CardTheme {
+  bgGradientStart: string;
+  bgGradientEnd: string;
+  textColor: string;
+  tagColor: string;
+  metaBorderColor: string;
+  timeColor: string;
+  authorColor: string;
+}
+
+const LIGHT_THEME: CardTheme = {
+  bgGradientStart: "#ffffff",
+  bgGradientEnd: "#f8f9fa",
+  textColor: "#1a1a1a",
+  tagColor: "#6b7280",
+  metaBorderColor: "rgba(0, 0, 0, 0.06)",
+  timeColor: "#9ca3af",
+  authorColor: "#9ca3af",
+};
+
+const DARK_THEME: CardTheme = {
+  bgGradientStart: "#1e1e1e",
+  bgGradientEnd: "#2a2a2a",
+  textColor: "#e0e0e0",
+  tagColor: "#9ca3af",
+  metaBorderColor: "rgba(255, 255, 255, 0.08)",
+  timeColor: "#6b7280",
+  authorColor: "#6b7280",
+};
+
+/* ---------------------------------------------------------------------------
+   Canvas-based image generation — no DOM serialization, no foreignObject.
+   --------------------------------------------------------------------------- */
+
+const CARD_WIDTH = 440;
+const PADDING_X = 28;
+const PADDING_TOP = 32;
+const PADDING_BOTTOM = 24;
+const BORDER_RADIUS = 16;
+const CONTENT_FONT_SIZE = 16;
+const CONTENT_LINE_HEIGHT = 1.8;
+const META_FONT_SIZE = 12;
+const FONT_FAMILY =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const PIXEL_RATIO = 2;
+
+/** A text segment: either plain text or a #tag. */
+interface TextSegment {
+  text: string;
+  isTag: boolean;
+}
+
+/** Parse content into lines of segments. */
+function parseContentSegments(content: string): TextSegment[][] {
+  const lines = content.split("\n");
+  const result: TextSegment[][] = [];
+  const re = new RegExp(INLINE_TAG_RE.source, INLINE_TAG_RE.flags);
+
+  for (const line of lines) {
+    const segments: TextSegment[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    re.lastIndex = 0;
+
+    while ((match = re.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({ text: line.slice(lastIndex, match.index), isTag: false });
+      }
+      segments.push({ text: `#${match[1]}`, isTag: true });
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < line.length) {
+      segments.push({ text: line.slice(lastIndex), isTag: false });
+    }
+    // Empty line → push one empty segment so it still gets a line break
+    if (segments.length === 0) {
+      segments.push({ text: "", isTag: false });
+    }
+    result.push(segments);
+  }
+  return result;
+}
+
+/**
+ * Word-wrap segments into visual lines that fit within maxWidth.
+ * Each visual line is an array of { text, isTag, x } positioned segments.
+ */
+interface PositionedSegment {
+  text: string;
+  isTag: boolean;
+  x: number;
+}
+
+function wrapSegmentLines(
+  ctx: CanvasRenderingContext2D,
+  segments: TextSegment[][],
+  maxWidth: number,
+  fontSize: number
+): PositionedSegment[][] {
+  const visualLines: PositionedSegment[][] = [];
+
+  for (const lineSegments of segments) {
+    let currentLine: PositionedSegment[] = [];
+    let lineX = 0;
+
+    for (const seg of lineSegments) {
+      // Set font weight for measurement
+      ctx.font = seg.isTag
+        ? `500 ${fontSize}px ${FONT_FAMILY}`
+        : `normal ${fontSize}px ${FONT_FAMILY}`;
+
+      // Split by character for CJK-friendly wrapping
+      const chars = Array.from(seg.text);
+      let buf = "";
+
+      for (const ch of chars) {
+        const testWidth = ctx.measureText(buf + ch).width;
+        if (lineX + testWidth > maxWidth && (buf.length > 0 || currentLine.length > 0)) {
+          // Flush current buffer as a segment
+          if (buf.length > 0) {
+            currentLine.push({ text: buf, isTag: seg.isTag, x: lineX });
+            lineX += ctx.measureText(buf).width;
+          }
+          // Start new visual line
+          visualLines.push(currentLine);
+          currentLine = [];
+          lineX = 0;
+          buf = ch;
+        } else {
+          buf += ch;
+        }
+      }
+
+      // Flush remaining buffer
+      if (buf.length > 0) {
+        currentLine.push({ text: buf, isTag: seg.isTag, x: lineX });
+        lineX += ctx.measureText(buf).width;
+      }
+    }
+
+    visualLines.push(currentLine);
+  }
+
+  return visualLines;
+}
+
+/** Generate a PNG Blob by drawing directly onto a Canvas. */
+async function generateImage(
+  memo: MemoNote,
+  options: { authorName?: string; isDarkMode: boolean }
+): Promise<Blob> {
+  const theme = options.isDarkMode ? DARK_THEME : LIGHT_THEME;
+  const scale = PIXEL_RATIO;
+  const maxTextWidth = CARD_WIDTH - PADDING_X * 2;
+  const lineHeight = CONTENT_FONT_SIZE * CONTENT_LINE_HEIGHT;
+
+  // --- Measure pass: determine card height ---
+  const measureCanvas = document.createElement("canvas");
+  measureCanvas.width = CARD_WIDTH * scale;
+  measureCanvas.height = 1;
+  const mCtx = measureCanvas.getContext("2d")!;
+  mCtx.scale(scale, scale);
+  mCtx.font = `normal ${CONTENT_FONT_SIZE}px ${FONT_FAMILY}`;
+
+  const segmentLines = parseContentSegments(memo.content);
+  const wrappedLines = wrapSegmentLines(mCtx, segmentLines, maxTextWidth, CONTENT_FONT_SIZE);
+
+  const contentHeight = wrappedLines.length * lineHeight;
+  const metaGap = 20; // space between content and meta divider
+  const dividerHeight = 1;
+  const metaPaddingTop = 14;
+  const footerHeight = META_FONT_SIZE * 1.5;
+
+  const totalHeight =
+    PADDING_TOP +
+    contentHeight +
+    metaGap +
+    dividerHeight +
+    metaPaddingTop +
+    footerHeight +
+    PADDING_BOTTOM;
+
+  // --- Draw pass ---
+  const canvas = document.createElement("canvas");
+  canvas.width = CARD_WIDTH * scale;
+  canvas.height = totalHeight * scale;
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(scale, scale);
+
+  // Background with rounded rectangle + gradient
+  const grad = ctx.createLinearGradient(0, 0, CARD_WIDTH * 0.6, totalHeight * 0.6);
+  grad.addColorStop(0, theme.bgGradientStart);
+  grad.addColorStop(1, theme.bgGradientEnd);
+  ctx.fillStyle = grad;
+  roundRect(ctx, 0, 0, CARD_WIDTH, totalHeight, BORDER_RADIUS);
+  ctx.fill();
+
+  // --- Draw content ---
+  let y = PADDING_TOP + CONTENT_FONT_SIZE; // baseline of first line
+
+  for (const vLine of wrappedLines) {
+    for (const seg of vLine) {
+      if (seg.isTag) {
+        ctx.font = `500 ${CONTENT_FONT_SIZE}px ${FONT_FAMILY}`;
+        ctx.fillStyle = theme.tagColor;
+      } else {
+        ctx.font = `normal ${CONTENT_FONT_SIZE}px ${FONT_FAMILY}`;
+        ctx.fillStyle = theme.textColor;
+      }
+      ctx.fillText(seg.text, PADDING_X + seg.x, y);
+    }
+    y += lineHeight;
+  }
+
+  // --- Divider line ---
+  const dividerY = PADDING_TOP + contentHeight + metaGap;
+  ctx.fillStyle = theme.metaBorderColor;
+  ctx.fillRect(PADDING_X, dividerY, maxTextWidth, dividerHeight);
+
+  // --- Footer: time (left) and author (right) ---
+  const footerY = dividerY + dividerHeight + metaPaddingTop + META_FONT_SIZE;
+
+  // Time
+  const d = new Date(memo.created);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const timeText = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+
+  ctx.font = `300 ${META_FONT_SIZE}px ${FONT_FAMILY}`;
+  ctx.fillStyle = theme.timeColor;
+  ctx.fillText(timeText, PADDING_X, footerY);
+
+  // Author (right-aligned)
+  if (options.authorName) {
+    const authorText = `\u2014 ${options.authorName}`;
+    ctx.font = `italic 400 ${META_FONT_SIZE}px ${FONT_FAMILY}`;
+    ctx.fillStyle = theme.authorColor;
+    const authorWidth = ctx.measureText(authorText).width;
+    ctx.fillText(authorText, CARD_WIDTH - PADDING_X - authorWidth, footerY);
+  }
+
+  // --- Export to Blob ---
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas toBlob returned null"));
+      },
+      "image/png"
+    );
+  });
+}
+
+/** Draw a rounded rectangle path (does not fill/stroke). */
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+/* ---------------------------------------------------------------------------
+   DOM preview builder (for the modal preview — uses CSS classes from styles.css)
+   --------------------------------------------------------------------------- */
 
 /** Render memo content into a container using plain DOM (no Obsidian API). */
 function renderExportContent(content: string, container: HTMLElement) {
@@ -40,9 +325,9 @@ function renderExportContent(content: string, container: HTMLElement) {
 }
 
 /**
- * Build a standalone export card DOM element for image generation.
- * This is NOT a screenshot of the in-view card — it is a purpose-built
- * element with its own styling for export.
+ * Build a standalone export card DOM element for the modal preview.
+ * This uses CSS classes — it is only shown inside the modal, NOT used
+ * for image generation (Canvas handles that directly).
  */
 export function buildExportCard(
   memo: MemoNote,
@@ -90,27 +375,9 @@ export function buildExportCard(
   return card;
 }
 
-/** Convert a DOM element to a PNG Blob using html-to-image. */
-async function generateImage(cardEl: HTMLElement): Promise<Blob> {
-  // Temporarily attach to document body (off-screen) for rendering
-  cardEl.style.position = "fixed";
-  cardEl.style.left = "-9999px";
-  cardEl.style.top = "0";
-  document.body.appendChild(cardEl);
-
-  try {
-    const dataUrl = await toPng(cardEl, {
-      pixelRatio: 2, // 2x for retina/sharp output
-      quality: 1.0,
-    });
-
-    // Convert data URL to Blob
-    const res = await fetch(dataUrl);
-    return await res.blob();
-  } finally {
-    document.body.removeChild(cardEl);
-  }
-}
+/* ---------------------------------------------------------------------------
+   Export modal
+   --------------------------------------------------------------------------- */
 
 /** Modal showing the export card preview with Save / Copy buttons. */
 export class ExportModal extends Modal {
@@ -130,7 +397,7 @@ export class ExportModal extends Modal {
     // Determine dark mode
     const isDarkMode = document.body.classList.contains("theme-dark");
 
-    // Build the export card preview
+    // Build the export card preview (DOM-based, for visual preview only)
     const authorName = this.plugin.settings.showAuthorInExport
       ? this.plugin.settings.authorName
       : undefined;
@@ -156,27 +423,40 @@ export class ExportModal extends Modal {
     copyBtn.addEventListener("click", () => this.handleCopy(isDarkMode));
   }
 
+  /** Build filename from memo date. */
+  private buildFilename(): string {
+    const d = new Date(this.memo.created);
+    return `memo-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}.png`;
+  }
+
+  /** Get export options for Canvas image generation. */
+  private getExportOptions(isDarkMode: boolean) {
+    const authorName = this.plugin.settings.showAuthorInExport
+      ? this.plugin.settings.authorName
+      : undefined;
+    return { authorName, isDarkMode };
+  }
+
   async handleSave(isDarkMode: boolean) {
     try {
-      const authorName = this.plugin.settings.showAuthorInExport
-        ? this.plugin.settings.authorName
-        : undefined;
-      const cardEl = buildExportCard(this.memo, { authorName, isDarkMode });
-      const blob = await generateImage(cardEl);
+      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
+      const fname = this.buildFilename();
 
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const d = new Date(this.memo.created);
-      const fname = `memo-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}.png`;
-      a.download = fname;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (Platform.isMobile) {
+        await this.handleMobileSave(blob, fname);
+      } else {
+        // Desktop: trigger browser download via <a> element
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        new Notice("Image saved!");
+      }
 
-      new Notice("Image saved!");
       this.close();
     } catch (err) {
       new Notice(
@@ -185,13 +465,31 @@ export class ExportModal extends Modal {
     }
   }
 
+  /** Mobile save: try Web Share API first, fall back to saving into the vault. */
+  private async handleMobileSave(blob: Blob, fname: string) {
+    // Try the Web Share API (lets user save to photos, send to apps, etc.)
+    const file = new File([blob], fname, { type: "image/png" });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return; // user handled via share sheet
+      } catch (shareErr: unknown) {
+        // User cancelled or share failed — fall through to vault save
+        if (shareErr instanceof Error && shareErr.name === "AbortError") return;
+      }
+    }
+
+    // Fallback: save into the vault so user can find the file
+    const saveFolder = this.plugin.settings.saveFolder;
+    const vaultPath = `${saveFolder}/${fname}`;
+    const arrayBuf = await blob.arrayBuffer();
+    await this.app.vault.createBinary(vaultPath, arrayBuf);
+    new Notice(`Image saved to ${vaultPath}`);
+  }
+
   async handleCopy(isDarkMode: boolean) {
     try {
-      const authorName = this.plugin.settings.showAuthorInExport
-        ? this.plugin.settings.authorName
-        : undefined;
-      const cardEl = buildExportCard(this.memo, { authorName, isDarkMode });
-      const blob = await generateImage(cardEl);
+      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
 
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": blob }),
