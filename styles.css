@@ -470,10 +470,10 @@
   border: none;
   border-radius: 0;
   padding: 12px;
-  height: 40vh;
   flex-shrink: 0;
   font-size: 16px;
   line-height: 1.7;
+  resize: none;
 }
 
 /* =============================================================================
