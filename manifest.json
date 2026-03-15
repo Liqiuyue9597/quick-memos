@@ -1,7 +1,7 @@
 {
   "id": "quick-memos",
   "name": "Quick Memos",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "minAppVersion": "1.4.0",
   "description": "A flomo-style quick capture and card view for your vault.",
   "author": "Liqiuyue9597",

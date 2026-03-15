@@ -66,7 +66,7 @@ export default class MemosPlugin extends Plugin {
       },
     });
 
-    // Listen for file-open events → auto-trigger CaptureModal for the entry note
+    // Listen for file-open events → auto-trigger Capture view for the entry note
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
         if (file && file.path === normalizePath(this.settings.captureNotePath)) {

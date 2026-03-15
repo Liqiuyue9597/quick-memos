@@ -1,6 +1,6 @@
 {
   "name": "obsidian-memos",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "description": "A flomo-style quick capture and card view for Obsidian.",
   "main": "main.js",
   "scripts": {
