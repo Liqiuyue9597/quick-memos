@@ -63,25 +63,17 @@ export class CaptureModal extends Modal {
       }
     });
 
-    // Mobile keyboard handling: push bottom-sheet above keyboard
-    if (window.visualViewport && document.body.classList.contains("is-mobile")) {
+    // Mobile: when keyboard opens, scroll save button into view
+    if (document.body.classList.contains("is-mobile") && window.visualViewport) {
       this.viewportHandler = () => {
         const vv = window.visualViewport!;
         const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
-        const modalEl = contentEl.closest(".modal") as HTMLElement | null;
-        if (modalEl) {
-          if (keyboardHeight > 100) {
-            // Push modal above keyboard and constrain height to visible area
-            modalEl.style.bottom = `${keyboardHeight}px`;
-            modalEl.style.height = `${vv.height * 0.7}px`;
-          } else {
-            modalEl.style.bottom = "0";
-            modalEl.style.height = "";
-          }
+        if (keyboardHeight > 100) {
+          // Keyboard is open — scroll the save button into the visible area
+          saveBtn.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       };
       window.visualViewport.addEventListener("resize", this.viewportHandler);
-      window.visualViewport.addEventListener("scroll", this.viewportHandler);
     }
 
     // Auto-focus
@@ -115,7 +107,6 @@ export class CaptureModal extends Modal {
   onClose() {
     if (this.viewportHandler && window.visualViewport) {
       window.visualViewport.removeEventListener("resize", this.viewportHandler);
-      window.visualViewport.removeEventListener("scroll", this.viewportHandler);
       this.viewportHandler = null;
     }
     this.contentEl.empty();

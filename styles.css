@@ -393,32 +393,25 @@
   cursor: pointer;
 }
 
-/* Mobile: bottom-sheet style capture modal */
-.is-mobile .modal:has(.memos-capture-modal) {
-  position: fixed;
-  bottom: 0;
-  top: auto;
-  left: 0;
-  right: 0;
-  max-height: 60vh;
-  border-radius: 16px 16px 0 0;
-  overflow: hidden;
-  transition: bottom 0.15s ease, height 0.15s ease;
-}
-
+/* Mobile: compact capture modal that works with on-screen keyboard */
 .is-mobile .memos-capture-modal {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 6px;
 }
 
 .is-mobile .memos-capture-textarea {
-  flex: 1;
-  min-height: 100px;
+  min-height: 80px;
+  max-height: 30vh;
 }
 
 .is-mobile .memos-capture-bottom-bar {
   flex-shrink: 0;
+}
+
+.is-mobile .memos-capture-save-btn {
+  padding: 10px;
+  font-size: 15px;
 }
 
 /* =============================================================================
