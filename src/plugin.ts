@@ -5,10 +5,10 @@ import {
   normalizePath,
 } from "obsidian";
 
-import { VIEW_TYPE_MEMOS } from "./constants";
+import { VIEW_TYPE_MEMOS, VIEW_TYPE_CAPTURE } from "./constants";
 import { MemosSettings, DEFAULT_SETTINGS } from "./types";
 import { MemosView } from "./view";
-import { CaptureModal } from "./capture-modal";
+import { CaptureItemView } from "./capture-view";
 import { MemosSettingTab } from "./settings";
 
 export default class MemosPlugin extends Plugin {
@@ -18,6 +18,7 @@ export default class MemosPlugin extends Plugin {
     await this.loadSettings();
 
     this.registerView(VIEW_TYPE_MEMOS, (leaf) => new MemosView(leaf, this));
+    this.registerView(VIEW_TYPE_CAPTURE, (leaf) => new CaptureItemView(leaf, this));
 
     // Ribbon icon → open Memos view (fullscreen on mobile)
     this.addRibbonIcon("sticky-note", "Open Memos view", () => {
@@ -28,7 +29,7 @@ export default class MemosPlugin extends Plugin {
       id: "open-memos-capture",
       name: "Quick capture",
       callback: () => {
-        new CaptureModal(this.app, this).open();
+        this.activateCaptureView();
       },
     });
 
@@ -69,7 +70,7 @@ export default class MemosPlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
         if (file && file.path === normalizePath(this.settings.captureNotePath)) {
-          new CaptureModal(this.app, this).open();
+          this.activateCaptureView();
         }
       })
     );
@@ -84,6 +85,12 @@ export default class MemosPlugin extends Plugin {
   onunload() {
     // Intentionally empty — do NOT detach leaves here.
     // Obsidian restores views in their original positions on plugin reload/update.
+  }
+
+  async activateCaptureView() {
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.setViewState({ type: VIEW_TYPE_CAPTURE, active: true });
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async activateView() {

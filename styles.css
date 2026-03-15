@@ -393,12 +393,7 @@
   cursor: pointer;
 }
 
-/* Mobile: push modal higher so keyboard doesn't cover it */
-.is-mobile .modal:has(.memos-capture-modal) {
-  transform: translateY(-20%);
-}
-
-/* Mobile: top bar layout — tag input + save above textarea to avoid keyboard occlusion */
+/* Mobile: top bar layout */
 .memos-capture-top-bar {
   display: flex;
   align-items: center;
@@ -415,6 +410,68 @@
   width: auto;
   padding: 6px 18px;
   flex-shrink: 0;
+}
+
+/* =============================================================================
+   Capture ItemView (full-screen editor tab)
+   ============================================================================= */
+
+.memos-capture-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+}
+
+.memos-capture-view-container .memos-capture-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.memos-capture-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-muted);
+  border-radius: 4px;
+}
+
+.memos-capture-back-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.memos-capture-view-container .memos-capture-save-btn {
+  width: auto;
+  padding: 6px 20px;
+  flex-shrink: 0;
+}
+
+.memos-capture-view-container .memos-capture-tag-row {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.memos-capture-view-container .memos-capture-hint {
+  padding: 4px 12px 0;
+  flex-shrink: 0;
+}
+
+.memos-capture-view-container .memos-capture-textarea {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding: 12px;
+  min-height: 0;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
 /* =============================================================================

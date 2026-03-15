@@ -13,7 +13,6 @@ import { extractInlineTags } from "./utils";
 import { parseMemoContent } from "./memo-parser";
 import { computeStats, renderStatsSection } from "./stats";
 import type MemosPlugin from "./plugin";
-import { CaptureModal } from "./capture-modal";
 import { ExportModal } from "./export-image";
 
 export class MemosView extends ItemView {
@@ -193,7 +192,7 @@ export class MemosView extends ItemView {
     });
     setIcon(captureBtn, "pencil");
     captureBtn.addEventListener("click", () => {
-      new CaptureModal(this.app, this.plugin).open();
+      this.plugin.activateCaptureView();
     });
 
     const randomBtn = right.createDiv({
