@@ -393,6 +393,12 @@
   cursor: pointer;
 }
 
+/* Mobile: push modal higher so keyboard doesn't cover it */
+.is-mobile .modal:has(.memos-capture-modal) {
+  top: 10%;
+  bottom: auto;
+}
+
 /* Mobile: top bar layout — tag input + save above textarea to avoid keyboard occlusion */
 .memos-capture-top-bar {
   display: flex;
