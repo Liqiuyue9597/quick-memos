@@ -26,8 +26,6 @@ export class CaptureItemView extends ItemView {
     return "pencil";
   }
 
-  private initialHeight = 0;
-
   async onOpen() {
     const container = this.contentEl;
     container.empty();
@@ -88,17 +86,8 @@ export class CaptureItemView extends ItemView {
       }
     });
 
-    // Capture initial height before keyboard opens, then lock it.
-    // Use requestAnimationFrame to ensure layout is computed.
-    requestAnimationFrame(() => {
-      this.initialHeight = container.clientHeight;
-      // Lock the container height so keyboard open/close doesn't cause reflow
-      container.style.height = `${this.initialHeight}px`;
-      container.style.overflow = "auto";
-
-      // Now safe to focus — the height is locked
-      setTimeout(() => this.textarea.focus(), 50);
-    });
+    // Delay focus slightly so the initial layout is stable before keyboard appears
+    setTimeout(() => this.textarea.focus(), 100);
   }
 
   async onClose() {
