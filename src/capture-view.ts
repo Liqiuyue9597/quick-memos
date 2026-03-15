@@ -38,7 +38,8 @@ export class CaptureItemView extends ItemView {
       cls: "memos-capture-back-btn clickable-icon",
     });
     setIcon(backBtn, "arrow-left");
-    backBtn.addEventListener("click", () => {
+    backBtn.addEventListener("click", async () => {
+      await this.plugin.activateView();
       this.leaf.detach();
     });
 
@@ -107,6 +108,7 @@ export class CaptureItemView extends ItemView {
     try {
       await this.plugin.saveMemo(trimmed, allTags);
       new Notice("Memo saved!");
+      await this.plugin.activateView();
       this.leaf.detach();
     } catch (err) {
       new Notice(
