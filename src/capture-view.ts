@@ -34,7 +34,10 @@ export class ImageSuggestModal extends FuzzySuggestModal<TFile> {
 export class CaptureItemView extends ItemView {
   plugin: MemosPlugin;
   private textarea!: HTMLTextAreaElement;
-  private tagInput!: HTMLInputElement;
+  /** Explicit tags added via the pill UI (without leading #). */
+  private tags: string[] = [];
+  /** Container element for tag pills. */
+  private tagsContainer!: HTMLDivElement;
 
   constructor(leaf: WorkspaceLeaf, plugin: MemosPlugin) {
     super(leaf);
@@ -56,51 +59,45 @@ export class CaptureItemView extends ItemView {
   async onOpen() {
     const container = this.contentEl;
     container.empty();
-    container.addClass("memos-capture-view-container");
+    container.addClass("memos-capture-card-container");
 
-    // ── Top bar: back button + save button ──
-    const topBar = container.createDiv("memos-capture-top-bar");
-
-    const backBtn = topBar.createEl("button", {
-      cls: "memos-capture-back-btn clickable-icon",
+    // ── Close button (top-left floating circle) ──
+    const closeBtn = container.createEl("button", {
+      cls: "memos-capture-close clickable-icon",
+      attr: { "aria-label": "返回" },
     });
-    setIcon(backBtn, "arrow-left");
-    backBtn.addEventListener("click", async () => {
+    setIcon(closeBtn, "arrow-left");
+    closeBtn.addEventListener("click", async () => {
       await this.plugin.activateView();
       this.leaf.detach();
     });
 
-    const saveBtn = topBar.createEl("button", {
-      cls: "memos-capture-save-btn mod-cta",
-      text: "Save",
+    // ── Card ──
+    const card = container.createDiv("memos-capture-card");
+
+    // ── Textarea wrap ──
+    const textareaWrap = card.createDiv("memos-capture-card-textarea-wrap");
+    this.textarea = textareaWrap.createEl("textarea", {
+      cls: "memos-capture-card-textarea",
+      attr: { placeholder: "What's on your mind?" },
     });
-    saveBtn.addEventListener("click", () => {
-      this.handleSave();
-    });
 
-    // ── Tag row ──
-    const tagRow = container.createDiv("memos-capture-tag-row");
-    tagRow.createSpan({ cls: "memos-capture-tag-label", text: "#" });
-    this.tagInput = tagRow.createEl("input", {
-      cls: "memos-capture-tag-input",
-      attr: {
-        type: "text",
-        placeholder: "tags, separated by spaces or commas",
-      },
-    }) as HTMLInputElement;
+    // ── Tags area ──
+    this.tags = [];
+    this.tagsContainer = card.createDiv("memos-capture-card-tags");
+    this.renderTags();
 
-    // Fixed tag hint
-    if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
-      const hint = container.createDiv({ cls: "memos-capture-hint" });
-      hint.setText(
-        `Fixed tag: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`
-      );
-    }
+    // ── Divider ──
+    card.createDiv("memos-capture-card-divider");
 
-    // ── Action row (image button) ──
-    const actionRow = container.createDiv("memos-capture-action-row");
-    const imageBtn = actionRow.createEl("button", {
-      cls: "memos-capture-action-btn clickable-icon",
+    // ── Footer ──
+    const footer = card.createDiv("memos-capture-card-footer");
+    const footerLeft = footer.createDiv("memos-capture-card-footer-left");
+    const footerRight = footer.createDiv("memos-capture-card-footer-right");
+
+    // Image button
+    const imageBtn = footerLeft.createEl("button", {
+      cls: "memos-capture-card-foot-btn clickable-icon",
       attr: { "aria-label": "插入图片" },
     });
     setIcon(imageBtn, "image");
@@ -110,15 +107,34 @@ export class CaptureItemView extends ItemView {
       }).open();
     });
 
-    // ── Textarea ──
-    this.textarea = container.createEl("textarea", {
-      cls: "memos-capture-textarea",
-      attr: {
-        placeholder: "What's on your mind?",
-      },
+    // Tag shortcut button (focuses the add-tag input)
+    const tagBtn = footerLeft.createEl("button", {
+      cls: "memos-capture-card-foot-btn clickable-icon",
+      attr: { "aria-label": "添加标签" },
+    });
+    setIcon(tagBtn, "hash");
+    tagBtn.addEventListener("click", () => {
+      this.showTagInput();
     });
 
-    // Keyboard shortcut: Ctrl/Cmd + Enter to save
+    // Fixed tag hint
+    if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
+      footerLeft.createSpan({
+        cls: "memos-capture-card-hint",
+        text: `固定标签: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`,
+      });
+    }
+
+    // Save button
+    const saveBtn = footerRight.createEl("button", {
+      cls: "memos-capture-card-save",
+      text: "保存 Memo",
+    });
+    saveBtn.addEventListener("click", () => {
+      this.handleSave();
+    });
+
+    // ── Keyboard shortcut: Ctrl/Cmd + Enter to save ──
     container.addEventListener("keydown", (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
@@ -126,13 +142,85 @@ export class CaptureItemView extends ItemView {
       }
     });
 
-    // Delay focus slightly so the initial layout is stable before keyboard appears
+    // Focus textarea after layout settles
     setTimeout(() => this.textarea.focus(), 100);
   }
 
   async onClose() {
     this.contentEl.empty();
   }
+
+  // ── Tag pill UI ──────────────────────────────────────────
+
+  /** Re-render the tags container: existing pills + the add button. */
+  private renderTags() {
+    this.tagsContainer.empty();
+
+    for (const tag of this.tags) {
+      const pill = this.tagsContainer.createDiv("memos-capture-card-tag");
+      pill.createSpan({ text: `#${tag}` });
+      const removeBtn = pill.createSpan({
+        cls: "memos-capture-card-tag-remove",
+        text: "×",
+      });
+      removeBtn.addEventListener("click", () => {
+        this.tags = this.tags.filter((t) => t !== tag);
+        this.renderTags();
+      });
+    }
+
+    // "+ 添加标签" button
+    const addBtn = this.tagsContainer.createDiv("memos-capture-card-tag-add");
+    addBtn.setText("+ 添加标签");
+    addBtn.addEventListener("click", () => {
+      this.showTagInput(addBtn);
+    });
+  }
+
+  /** Replace the add-button with an inline input for entering a new tag. */
+  private showTagInput(replaceEl?: HTMLElement) {
+    // If no element provided, find the add button inside tagsContainer
+    const target =
+      replaceEl ??
+      this.tagsContainer.querySelector<HTMLElement>(
+        ".memos-capture-card-tag-add"
+      );
+    if (!target) return;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "memos-capture-card-tag-input";
+    input.placeholder = "标签名…";
+    target.replaceWith(input);
+    input.focus();
+
+    const commit = () => {
+      const values = parseTags(input.value);
+      for (const v of values) {
+        if (!this.tags.includes(v)) {
+          this.tags.push(v);
+        }
+      }
+      this.renderTags();
+    };
+
+    input.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " " || e.key === ",") {
+        e.preventDefault();
+        commit();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        this.renderTags();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      commit();
+    });
+  }
+
+  // ── Helpers ──────────────────────────────────────────────
 
   /** Insert text at the current cursor position in the textarea. */
   private insertAtCursor(text: string) {
@@ -155,7 +243,7 @@ export class CaptureItemView extends ItemView {
       return;
     }
 
-    const explicitTags = parseTags(this.tagInput.value);
+    const explicitTags = [...this.tags];
     const inlineTags = extractInlineTags(trimmed);
     const allTags = Array.from(new Set([...explicitTags, ...inlineTags]));
 

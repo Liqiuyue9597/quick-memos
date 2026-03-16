@@ -318,125 +318,249 @@
 }
 
 /* =============================================================================
-   Capture – shared styles (used by CaptureItemView)
+   Capture – Card-based Editor (CaptureItemView)
    ============================================================================= */
 
-.memos-capture-tag-row {
+/* Full-screen centred container with frosted glass background */
+.memos-capture-card-container {
   display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.memos-capture-tag-label {
-  color: var(--text-faint);
-  font-weight: 500;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.memos-capture-tag-input {
-  flex: 1;
-  background-color: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 6px 4px;
-  font-size: 13px;
-  color: var(--text-normal);
-  transition: border-color 0.15s ease;
-}
-
-.memos-capture-tag-input:focus {
-  outline: none;
-}
-
-.memos-capture-hint {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-.memos-capture-save-btn {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 14px;
-  cursor: pointer;
-  border: none;
-  line-height: 1.4;
-}
-
-/* =============================================================================
-   Capture ItemView (full-screen editor tab)
-   ============================================================================= */
-
-.memos-capture-view-container {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
-  padding: 0;
-  overflow: hidden;
+  padding: 24px 16px;
+  overflow: auto;
+  position: relative;
+  background: rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(28px) saturate(1.2);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
 }
 
-.memos-capture-view-container .memos-capture-top-bar {
+.theme-dark .memos-capture-card-container {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Top-left floating close (back) button */
+.memos-capture-close {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.memos-capture-close:hover {
+  color: var(--text-normal);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.theme-dark .memos-capture-close {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .memos-capture-close:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.memos-capture-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Floating card */
+.memos-capture-card {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-primary);
+  border-radius: 18px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.theme-dark .memos-capture-card {
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 1px 4px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Textarea wrapper */
+.memos-capture-card-textarea-wrap {
+  padding: 24px 22px 12px;
+  flex: 1;
+}
+
+.memos-capture-card-textarea {
+  width: 100%;
+  min-height: 180px;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  resize: none;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--text-normal);
+  padding: 0;
+  margin: 0;
+}
+
+.memos-capture-card-textarea::placeholder {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.memos-capture-card-textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Tags area */
+.memos-capture-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 22px 12px;
+  min-height: 28px;
+}
+
+/* Individual tag pill */
+.memos-capture-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--background-primary-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.memos-capture-card-tag:hover {
+  color: var(--text-normal);
+}
+
+.memos-capture-card-tag-remove {
+  cursor: pointer;
+  color: var(--text-faint);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  margin-left: 2px;
+  transition: color 0.12s ease;
+}
+
+.memos-capture-card-tag-remove:hover {
+  color: var(--text-normal);
+}
+
+/* "+ 添加标签" button */
+.memos-capture-card-tag-add {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px dashed var(--background-modifier-border);
+  color: var(--text-faint);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.memos-capture-card-tag-add:hover {
+  color: var(--text-muted);
+  border-color: var(--text-faint);
+}
+
+/* Inline tag input (replaces the add button) */
+.memos-capture-card-tag-input,
+.memos-capture-card-tag-input[type="text"] {
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 3px 10px !important;
+  height: 24px !important;
+  min-height: unset !important;
+  border-radius: 6px !important;
+  border: 1px dashed var(--background-modifier-border) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--text-normal);
+  min-width: 60px;
+  max-width: 120px;
+  box-sizing: border-box;
+}
+
+.memos-capture-card-tag-input:focus,
+.memos-capture-card-tag-input:focus-visible,
+.memos-capture-card-tag-input[type="text"]:focus,
+.memos-capture-card-tag-input[type="text"]:focus-visible {
+  border: 1px solid var(--text-muted) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Divider */
+.memos-capture-card-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  margin: 0 22px;
+}
+
+/* Footer toolbar */
+.memos-capture-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  flex-shrink: 0;
+  padding: 10px 16px;
+  gap: 8px;
 }
 
-.memos-capture-back-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  color: var(--text-muted);
-  border-radius: 4px;
-}
-
-.memos-capture-back-btn:hover {
-  color: var(--text-normal);
-  background: var(--background-modifier-hover);
-}
-
-.memos-capture-view-container .memos-capture-save-btn {
-  width: auto;
-  padding: 5px 16px;
-  flex-shrink: 0;
-}
-
-.memos-capture-view-container .memos-capture-tag-row {
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  flex-shrink: 0;
-}
-
-.memos-capture-view-container .memos-capture-hint {
-  padding: 4px 12px 0;
-  flex-shrink: 0;
-}
-
-/* Action row (image button, etc.) */
-.memos-capture-action-row {
+.memos-capture-card-footer-left {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-  flex-shrink: 0;
 }
 
-.memos-capture-action-btn {
+.memos-capture-card-footer-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Tool buttons in footer */
+.memos-capture-card-foot-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   cursor: pointer;
   color: var(--text-muted);
   background: none;
@@ -445,41 +569,59 @@
   transition: color 0.15s ease, background 0.15s ease;
 }
 
-.memos-capture-action-btn:hover {
+.memos-capture-card-foot-btn:hover {
   color: var(--text-normal);
   background: var(--background-modifier-hover);
 }
 
-.memos-capture-action-btn svg {
+.memos-capture-card-foot-btn svg {
   width: 16px;
   height: 16px;
 }
 
-.memos-capture-view-container .memos-capture-textarea {
-  flex: 1;
-  min-height: 200px;
-  border: none !important;
-  border-radius: 0;
-  margin: 0;
-  padding: 12px;
-  font-size: 16px;
-  line-height: 1.7;
-  resize: none;
-  overflow-y: auto;
+/* Fixed tag hint in footer */
+.memos-capture-card-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: 4px;
+  white-space: nowrap;
 }
 
-.theme-dark .memos-capture-view-container .memos-capture-textarea {
-  border-color: transparent !important;
+/* Save button */
+.memos-capture-card-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  line-height: 1.4;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.memos-capture-view-container .memos-capture-textarea:focus {
-  outline: none !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
+.memos-capture-card-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
-.theme-dark .memos-capture-view-container .memos-capture-textarea:focus {
-  border-color: transparent !important;
+.theme-dark .memos-capture-card-save:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile: wider card */
+.is-mobile .memos-capture-card {
+  max-width: 100%;
+  border-radius: 14px;
+}
+
+.is-mobile .memos-capture-card-container {
+  padding: 16px 10px;
 }
 
 /* =============================================================================
