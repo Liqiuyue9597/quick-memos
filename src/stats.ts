@@ -64,6 +64,7 @@ export function getLevel(count: number): number {
 
 /**
  * Render the heatmap grid: 7 rows (Mon-Sun) x 17 columns (weeks).
+ * GitHub-style with weekday labels, month labels, and color legend.
  * Uses CSS grid with grid-auto-flow: column so we emit cells column-by-column.
  */
 export function renderHeatmap(
@@ -71,7 +72,25 @@ export function renderHeatmap(
   dailyCounts: Map<string, number>,
   onDateClick: (date: string) => void
 ) {
-  const heatmap = container.createDiv("memos-heatmap");
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const wrap = container.createDiv("memos-heatmap-wrap");
+
+  // --- Weekday labels (left side) ---
+  const weekdayLabels = wrap.createDiv("memos-heatmap-weekday-labels");
+  // Empty spacer to align with month label row
+  weekdayLabels.createDiv("memos-heatmap-weekday-spacer");
+  for (let dow = 0; dow < 7; dow++) {
+    const lbl = weekdayLabels.createDiv("memos-heatmap-weekday-label");
+    // Only show Mon, Wed, Fri
+    if (dow === 0 || dow === 2 || dow === 4) {
+      lbl.textContent = WEEKDAYS[dow];
+    }
+  }
+
+  // --- Grid area (month labels + heatmap cells) ---
+  const gridArea = wrap.createDiv("memos-heatmap-grid-area");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -86,6 +105,23 @@ export function renderHeatmap(
   startDate.setDate(startDate.getDate() - 16 * 7);
 
   const pad = (n: number) => n.toString().padStart(2, "0");
+
+  // --- Month labels row ---
+  const monthRow = gridArea.createDiv("memos-heatmap-month-labels");
+  let prevMonth = -1;
+  for (let week = 0; week < 17; week++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + week * 7);
+    const month = d.getMonth();
+    const monthLabel = monthRow.createDiv("memos-heatmap-month-label");
+    if (month !== prevMonth) {
+      monthLabel.textContent = MONTHS[month];
+      prevMonth = month;
+    }
+  }
+
+  // --- Heatmap grid ---
+  const heatmap = gridArea.createDiv("memos-heatmap");
 
   // Render column by column (CSS grid-auto-flow: column handles placement)
   for (let week = 0; week < 17; week++) {
@@ -106,7 +142,7 @@ export function renderHeatmap(
       const cell = heatmap.createDiv({
         cls: `memos-heatmap-cell memos-heatmap-level-${level}`,
         attr: {
-          "aria-label": `${label}: ${count} memo${count !== 1 ? "s" : ""}`,
+          "data-tooltip": `${label}: ${count} memo${count !== 1 ? "s" : ""}`,
           "data-date": label,
         },
       });
@@ -118,6 +154,7 @@ export function renderHeatmap(
       }
     }
   }
+
 }
 
 /**
