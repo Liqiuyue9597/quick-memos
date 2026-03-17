@@ -1,5 +1,6 @@
 import { App, Notice, normalizePath, TFile } from "obsidian";
 import { extractInlineTags } from "./utils";
+import { i18n } from "./i18n";
 
 /**
  * Parse a Flomo HTML export file and import each memo into the vault
@@ -147,7 +148,7 @@ export async function importFlomoHtml(
   const memos = parseFlomoHtml(htmlContent);
 
   if (memos.length === 0) {
-    new Notice("No memos found in the HTML file.");
+    new Notice(i18n.noMemosInHtml);
     return 0;
   }
 

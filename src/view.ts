@@ -15,6 +15,7 @@ import { computeStats, renderStatsSection } from "./stats";
 import type MemosPlugin from "./plugin";
 import { ExportModal } from "./export-image";
 import { exportToCanvas } from "./canvas-export";
+import { i18n } from "./i18n";
 
 export class MemosView extends ItemView {
   plugin: MemosPlugin;
@@ -33,7 +34,7 @@ export class MemosView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Memos";
+    return i18n.memosTitle;
   }
 
   getIcon(): string {
@@ -165,7 +166,7 @@ export class MemosView extends ItemView {
     ).length;
     left.createSpan({
       cls: "memos-count",
-      text: `${count} memo${count !== 1 ? "s" : ""}`,
+      text: i18n.memoCount(count),
     });
 
     if (this.activeTag) {
@@ -192,7 +193,7 @@ export class MemosView extends ItemView {
 
     const captureBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "New memo" },
+      attr: { "aria-label": i18n.newMemo },
     });
     setIcon(captureBtn, "pencil");
     captureBtn.addEventListener("click", () => {
@@ -201,7 +202,7 @@ export class MemosView extends ItemView {
 
     const randomBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "Random review" },
+      attr: { "aria-label": i18n.randomReview },
     });
     setIcon(randomBtn, "dice");
     randomBtn.addEventListener("click", () => {
@@ -210,7 +211,7 @@ export class MemosView extends ItemView {
 
     const canvasBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "Send to Canvas" },
+      attr: { "aria-label": i18n.sendToCanvas },
     });
     setIcon(canvasBtn, "layout-dashboard");
     canvasBtn.addEventListener("click", () => {
@@ -224,7 +225,7 @@ export class MemosView extends ItemView {
 
     if (filtered.length === 0) {
       const empty = el.createDiv("memos-empty");
-      empty.createSpan({ text: "No memos yet. Start capturing your thoughts!" });
+      empty.createSpan({ text: i18n.noMemosYet });
       return;
     }
 
@@ -289,7 +290,7 @@ export class MemosView extends ItemView {
 
     const shareBtn = footerRight.createDiv({
       cls: "memos-card-share-btn",
-      attr: { "aria-label": "Export as image" },
+      attr: { "aria-label": i18n.exportAsImage },
     });
     setIcon(shareBtn, "share");
     shareBtn.addEventListener("click", (e) => {

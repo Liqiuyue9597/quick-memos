@@ -30,7 +30,7 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 
 // src/plugin.ts
-var import_obsidian8 = require("obsidian");
+var import_obsidian9 = require("obsidian");
 
 // src/constants.ts
 var VIEW_TYPE_MEMOS = "memos-view";
@@ -55,7 +55,7 @@ var DEFAULT_SETTINGS = {
 };
 
 // src/view.ts
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/utils.ts
 function extractInlineTags(text) {
@@ -68,7 +68,7 @@ function extractInlineTags(text) {
   return tags;
 }
 function parseTags(input) {
-  return input.split(/[\s,，]+/).map((t) => t.replace(/^#+/, "").trim()).filter((t) => t.length > 0);
+  return input.split(/[\s,，]+/).map((t2) => t2.replace(/^#+/, "").trim()).filter((t2) => t2.length > 0);
 }
 
 // src/memo-parser.ts
@@ -85,9 +85,9 @@ function parseMemoContent(raw, fm, frontmatterEndOffset) {
   const inlineTags = extractInlineTags(body);
   const fmTags = [];
   if (Array.isArray(fm["tags"])) {
-    for (const t of fm["tags"]) {
-      if (typeof t === "string")
-        fmTags.push(t);
+    for (const t2 of fm["tags"]) {
+      if (typeof t2 === "string")
+        fmTags.push(t2);
     }
   }
   const tags = Array.from(/* @__PURE__ */ new Set([...fmTags, ...inlineTags]));
@@ -95,7 +95,223 @@ function parseMemoContent(raw, fm, frontmatterEndOffset) {
 }
 
 // src/stats.ts
+var import_obsidian2 = require("obsidian");
+
+// src/i18n.ts
 var import_obsidian = require("obsidian");
+var en = {
+  openMemosView: "Open Memos view",
+  quickCapture: "Quick capture",
+  createCaptureNote: "Create quick capture entry note",
+  entryNoteExists: "Entry note already exists: ${path}",
+  createdEntryNote: "Created entry note: ${path}",
+  memoContentEmpty: "Memo content is empty.",
+  memoSaved: "Memo saved!",
+  saveAsMemo: "Save as Memo",
+  selectionSavedAsMemo: "Selection saved as Memo!",
+  memosTitle: "Memos",
+  memoCount: (n) => `${n} memo${n !== 1 ? "s" : ""}`,
+  newMemo: "New memo",
+  randomReview: "Random review",
+  sendToCanvas: "Send to Canvas",
+  noMemosYet: "No memos yet. Start capturing your thoughts!",
+  exportAsImage: "Export as image",
+  searchImages: "Search image files\u2026",
+  searchNotes: "Search notes\u2026",
+  quickCaptureTitle: "Quick Capture",
+  back: "Back",
+  whatsOnYourMind: "What's on your mind?",
+  mood: "Mood",
+  source: "Source",
+  insertImage: "Insert image",
+  addTag: "Add tag",
+  fixedTagHint: "Fixed tag: #${tag}",
+  saveMemo: "Save Memo",
+  addTagButton: "+ Add tag",
+  tagPlaceholder: "Tag name\u2026",
+  memoEmpty: "Memo cannot be empty.",
+  failedToSave: "Failed to save memo: ${err}",
+  memosSettings: "Memos Settings",
+  saveFolder: "Save folder",
+  saveFolderDesc: "Folder where new memos are saved (relative to vault root).",
+  useFixedTag: "Use fixed tag",
+  useFixedTagDesc: "Automatically add a tag to every memo you capture.",
+  fixedTagValue: "Fixed tag value",
+  fixedTagValueDesc: "This tag will be added to every memo (without #).",
+  captureEntryNote: "Quick capture entry note",
+  captureEntryNoteDesc: `Path to the entry note that triggers the capture modal when opened. Use with the iOS widget's "Open a specific note" feature.`,
+  extendedMetadata: "Extended metadata",
+  enableMood: "Enable mood",
+  enableMoodDesc: "Show mood picker when capturing memos. Adds a mood field to frontmatter for Dataview queries.",
+  moodOptions: "Mood options",
+  moodOptionsDesc: "Comma-separated emojis for the mood picker.",
+  enableSource: "Enable source",
+  enableSourceDesc: "Show source picker when capturing memos. Adds a source field to frontmatter for Dataview queries.",
+  sourceOptions: "Source options",
+  sourceOptionsDesc: "Comma-separated source labels (e.g. thought, kindle, web).",
+  imageExport: "Image export",
+  showAuthorName: "Show author name",
+  showAuthorNameDesc: "Display your name at the bottom of exported memo images.",
+  authorName: "Author name",
+  authorNameDesc: "Your name or brand to show on exported images.",
+  showBranding: "Show branding",
+  showBrandingDesc: 'Display "Quick Memos for Obsidian" at the bottom of exported images.',
+  importHeading: "Import",
+  importFromFlomo: "Import from Flomo",
+  importFromFlomoDesc: "Select the HTML file exported from Flomo. Each memo will be converted to a .md file with proper frontmatter and saved to the save folder. Duplicate imports are automatically skipped.",
+  chooseHtmlFile: "Choose HTML file",
+  readingFile: "Reading ${name}...",
+  importSuccess: "Successfully imported ${count} memos from Flomo!",
+  importNoNew: "No new memos to import (all already exist or file is empty).",
+  importFailed: "Import failed: ${err}",
+  months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  heatmapTooltip: (date, count) => `${date}: ${count} memo${count !== 1 ? "s" : ""}`,
+  statsTitle: "Stats",
+  statTotal: "Total",
+  statStreak: "Streak",
+  statStreakUnit: "days",
+  statToday: "Today",
+  statThisMonth: "Month",
+  saveAsPng: "Save as PNG",
+  copyToClipboard: "Copy to clipboard",
+  imageSaved: "Image saved!",
+  imageSavedTo: "Image saved to ${path}",
+  imageCopied: "Image copied to clipboard!",
+  exportFailed: "Export failed: ${err}",
+  copyFailed: "Copy failed: ${err}",
+  noMemosToExport: "No memos to export.",
+  exportedToCanvas: "Exported ${count} memos to Canvas!",
+  noMemosInHtml: "No memos found in the HTML file.",
+  entryNoteContent: [
+    "This note is used by the Memos plugin as a quick capture entry point.",
+    "",
+    "**How to use on iOS:**",
+    "1. Long-press the Obsidian home screen widget",
+    "2. Tap Edit Widget",
+    '3. Set "Open a specific note" to this note',
+    "4. Tapping the widget will open Obsidian and automatically show the capture dialog",
+    "",
+    "> Do not delete this note if you want the widget shortcut to work."
+  ].join("\n")
+};
+var zh = {
+  openMemosView: "\u6253\u5F00 Memos \u89C6\u56FE",
+  quickCapture: "\u5FEB\u901F\u8BB0\u5F55",
+  createCaptureNote: "\u521B\u5EFA\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u7B14\u8BB0",
+  entryNoteExists: "\u5165\u53E3\u7B14\u8BB0\u5DF2\u5B58\u5728\uFF1A${path}",
+  createdEntryNote: "\u5DF2\u521B\u5EFA\u5165\u53E3\u7B14\u8BB0\uFF1A${path}",
+  memoContentEmpty: "Memo \u5185\u5BB9\u4E0D\u80FD\u4E3A\u7A7A\u3002",
+  memoSaved: "Memo \u5DF2\u4FDD\u5B58\uFF01",
+  saveAsMemo: "\u4FDD\u5B58\u4E3A Memo",
+  selectionSavedAsMemo: "\u5DF2\u4FDD\u5B58\u4E3A Memo\uFF01",
+  memosTitle: "Memos",
+  memoCount: (n) => `${n} \u6761 memo`,
+  newMemo: "\u65B0\u5EFA memo",
+  randomReview: "\u968F\u673A\u56DE\u987E",
+  sendToCanvas: "\u53D1\u9001\u5230 Canvas",
+  noMemosYet: "\u8FD8\u6CA1\u6709 memo\uFF0C\u5F00\u59CB\u8BB0\u5F55\u4F60\u7684\u60F3\u6CD5\u5427\uFF01",
+  exportAsImage: "\u5BFC\u51FA\u4E3A\u56FE\u7247",
+  searchImages: "\u641C\u7D22\u56FE\u7247\u6587\u4EF6\u2026",
+  searchNotes: "\u641C\u7D22\u7B14\u8BB0\u2026",
+  quickCaptureTitle: "\u5FEB\u901F\u8BB0\u5F55",
+  back: "\u8FD4\u56DE",
+  whatsOnYourMind: "\u6B64\u523B\u7684\u60F3\u6CD5\u2026",
+  mood: "\u5FC3\u60C5",
+  source: "\u6765\u6E90",
+  insertImage: "\u63D2\u5165\u56FE\u7247",
+  addTag: "\u6DFB\u52A0\u6807\u7B7E",
+  fixedTagHint: "\u56FA\u5B9A\u6807\u7B7E\uFF1A#${tag}",
+  saveMemo: "\u4FDD\u5B58 Memo",
+  addTagButton: "+ \u6DFB\u52A0\u6807\u7B7E",
+  tagPlaceholder: "\u6807\u7B7E\u540D\u2026",
+  memoEmpty: "Memo \u4E0D\u80FD\u4E3A\u7A7A\u3002",
+  failedToSave: "\u4FDD\u5B58\u5931\u8D25\uFF1A${err}",
+  memosSettings: "Memos \u8BBE\u7F6E",
+  saveFolder: "\u4FDD\u5B58\u6587\u4EF6\u5939",
+  saveFolderDesc: "\u65B0 memo \u7684\u4FDD\u5B58\u4F4D\u7F6E\uFF08\u76F8\u5BF9\u4E8E vault \u6839\u76EE\u5F55\uFF09\u3002",
+  useFixedTag: "\u4F7F\u7528\u56FA\u5B9A\u6807\u7B7E",
+  useFixedTagDesc: "\u81EA\u52A8\u4E3A\u6BCF\u6761 memo \u6DFB\u52A0\u4E00\u4E2A\u6807\u7B7E\u3002",
+  fixedTagValue: "\u56FA\u5B9A\u6807\u7B7E\u503C",
+  fixedTagValueDesc: "\u81EA\u52A8\u6DFB\u52A0\u7684\u6807\u7B7E\uFF08\u4E0D\u542B #\uFF09\u3002",
+  captureEntryNote: "\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u7B14\u8BB0",
+  captureEntryNoteDesc: "\u6253\u5F00\u6B64\u7B14\u8BB0\u65F6\u81EA\u52A8\u89E6\u53D1\u8BB0\u5F55\u5F39\u7A97\u3002\u914D\u5408 iOS Widget \u7684\u300C\u6253\u5F00\u6307\u5B9A\u7B14\u8BB0\u300D\u529F\u80FD\u4F7F\u7528\u3002",
+  extendedMetadata: "\u6269\u5C55\u5143\u6570\u636E",
+  enableMood: "\u542F\u7528\u5FC3\u60C5",
+  enableMoodDesc: "\u8BB0\u5F55\u65F6\u663E\u793A\u5FC3\u60C5\u9009\u62E9\u5668\uFF0C\u5728 frontmatter \u4E2D\u6DFB\u52A0 mood \u5B57\u6BB5\uFF0C\u652F\u6301 Dataview \u67E5\u8BE2\u3002",
+  moodOptions: "\u5FC3\u60C5\u9009\u9879",
+  moodOptionsDesc: "\u9017\u53F7\u5206\u9694\u7684 emoji \u5217\u8868\u3002",
+  enableSource: "\u542F\u7528\u6765\u6E90",
+  enableSourceDesc: "\u8BB0\u5F55\u65F6\u663E\u793A\u6765\u6E90\u9009\u62E9\u5668\uFF0C\u5728 frontmatter \u4E2D\u6DFB\u52A0 source \u5B57\u6BB5\uFF0C\u652F\u6301 Dataview \u67E5\u8BE2\u3002",
+  sourceOptions: "\u6765\u6E90\u9009\u9879",
+  sourceOptionsDesc: "\u9017\u53F7\u5206\u9694\u7684\u6765\u6E90\u6807\u7B7E\uFF08\u5982 thought\u3001kindle\u3001web\uFF09\u3002",
+  imageExport: "\u56FE\u7247\u5BFC\u51FA",
+  showAuthorName: "\u663E\u793A\u4F5C\u8005\u540D",
+  showAuthorNameDesc: "\u5728\u5BFC\u51FA\u7684 memo \u56FE\u7247\u5E95\u90E8\u663E\u793A\u4F60\u7684\u540D\u5B57\u3002",
+  authorName: "\u4F5C\u8005\u540D",
+  authorNameDesc: "\u663E\u793A\u5728\u5BFC\u51FA\u56FE\u7247\u4E0A\u7684\u540D\u5B57\u6216\u54C1\u724C\u3002",
+  showBranding: "\u663E\u793A\u54C1\u724C\u6807\u8BC6",
+  showBrandingDesc: "\u5728\u5BFC\u51FA\u56FE\u7247\u5E95\u90E8\u663E\u793A\u300CQuick Memos for Obsidian\u300D\u3002",
+  importHeading: "\u5BFC\u5165",
+  importFromFlomo: "\u4ECE Flomo \u5BFC\u5165",
+  importFromFlomoDesc: "\u9009\u62E9\u4ECE Flomo \u5BFC\u51FA\u7684 HTML \u6587\u4EF6\u3002\u6BCF\u6761 memo \u4F1A\u88AB\u8F6C\u6362\u4E3A\u5E26 frontmatter \u7684 .md \u6587\u4EF6\u5E76\u4FDD\u5B58\u5230\u6307\u5B9A\u6587\u4EF6\u5939\u3002\u91CD\u590D\u5BFC\u5165\u4F1A\u81EA\u52A8\u8DF3\u8FC7\u3002",
+  chooseHtmlFile: "\u9009\u62E9 HTML \u6587\u4EF6",
+  readingFile: "\u6B63\u5728\u8BFB\u53D6 ${name}\u2026",
+  importSuccess: "\u6210\u529F\u4ECE Flomo \u5BFC\u5165 ${count} \u6761 memo\uFF01",
+  importNoNew: "\u6CA1\u6709\u65B0\u7684 memo \u53EF\u5BFC\u5165\uFF08\u5168\u90E8\u5DF2\u5B58\u5728\u6216\u6587\u4EF6\u4E3A\u7A7A\uFF09\u3002",
+  importFailed: "\u5BFC\u5165\u5931\u8D25\uFF1A${err}",
+  months: ["1\u6708", "2\u6708", "3\u6708", "4\u6708", "5\u6708", "6\u6708", "7\u6708", "8\u6708", "9\u6708", "10\u6708", "11\u6708", "12\u6708"],
+  weekdays: ["\u5468\u4E00", "\u5468\u4E8C", "\u5468\u4E09", "\u5468\u56DB", "\u5468\u4E94", "\u5468\u516D", "\u5468\u65E5"],
+  heatmapTooltip: (date, count) => `${date}\uFF1A${count} \u6761 memo`,
+  statsTitle: "\u7EDF\u8BA1",
+  statTotal: "\u603B\u8BA1",
+  statStreak: "\u8FDE\u7EED",
+  statStreakUnit: "\u5929",
+  statToday: "\u4ECA\u65E5",
+  statThisMonth: "\u672C\u6708",
+  saveAsPng: "\u4FDD\u5B58\u4E3A PNG",
+  copyToClipboard: "\u590D\u5236\u5230\u526A\u8D34\u677F",
+  imageSaved: "\u56FE\u7247\u5DF2\u4FDD\u5B58\uFF01",
+  imageSavedTo: "\u56FE\u7247\u5DF2\u4FDD\u5B58\u5230 ${path}",
+  imageCopied: "\u56FE\u7247\u5DF2\u590D\u5236\u5230\u526A\u8D34\u677F\uFF01",
+  exportFailed: "\u5BFC\u51FA\u5931\u8D25\uFF1A${err}",
+  copyFailed: "\u590D\u5236\u5931\u8D25\uFF1A${err}",
+  noMemosToExport: "\u6CA1\u6709\u53EF\u5BFC\u51FA\u7684 memo\u3002",
+  exportedToCanvas: "\u5DF2\u5BFC\u51FA ${count} \u6761 memo \u5230 Canvas\uFF01",
+  noMemosInHtml: "HTML \u6587\u4EF6\u4E2D\u672A\u627E\u5230 memo\u3002",
+  entryNoteContent: [
+    "\u6B64\u7B14\u8BB0\u662F Memos \u63D2\u4EF6\u7684\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u3002",
+    "",
+    "**iOS \u4F7F\u7528\u65B9\u6CD5\uFF1A**",
+    "1. \u957F\u6309\u4E3B\u5C4F\u5E55\u4E0A\u7684 Obsidian \u5C0F\u7EC4\u4EF6",
+    "2. \u70B9\u51FB\u300C\u7F16\u8F91\u5C0F\u7EC4\u4EF6\u300D",
+    "3. \u5C06\u300C\u6253\u5F00\u6307\u5B9A\u7B14\u8BB0\u300D\u8BBE\u4E3A\u6B64\u7B14\u8BB0",
+    "4. \u70B9\u51FB\u5C0F\u7EC4\u4EF6\u5373\u53EF\u81EA\u52A8\u6253\u5F00\u8BB0\u5F55\u5F39\u7A97",
+    "",
+    "> \u5982\u679C\u9700\u8981\u4F7F\u7528 Widget \u5FEB\u6377\u5165\u53E3\uFF0C\u8BF7\u52FF\u5220\u9664\u6B64\u7B14\u8BB0\u3002"
+  ].join("\n")
+};
+function t(key, vars) {
+  let val = i18n[key];
+  if (typeof val !== "string")
+    return key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      val = val.replace(`\${${k}}`, String(v));
+    }
+  }
+  return val;
+}
+function isChinese() {
+  try {
+    return (0, import_obsidian.getLanguage)().startsWith("zh");
+  } catch (e) {
+    return false;
+  }
+}
+var i18n = isChinese() ? zh : en;
+
+// src/stats.ts
 function computeStats(memos) {
   var _a, _b;
   const dailyCounts = /* @__PURE__ */ new Map();
@@ -146,8 +362,8 @@ function getLevel(count) {
 }
 function renderHeatmap(container, dailyCounts, onDateClick) {
   var _a;
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const MONTHS = i18n.months;
+  const WEEKDAYS = i18n.weekdays;
   const wrap = container.createDiv("memos-heatmap-wrap");
   const weekdayLabels = wrap.createDiv("memos-heatmap-weekday-labels");
   weekdayLabels.createDiv("memos-heatmap-weekday-spacer");
@@ -194,7 +410,7 @@ function renderHeatmap(container, dailyCounts, onDateClick) {
       const cell = heatmap.createDiv({
         cls: `memos-heatmap-cell memos-heatmap-level-${level}`,
         attr: {
-          "data-tooltip": `${label}: ${count} memo${count !== 1 ? "s" : ""}`,
+          "data-tooltip": i18n.heatmapTooltip(label, count),
           "data-date": label
         }
       });
@@ -210,8 +426,8 @@ function renderStatsSection(container, stats, collapsed, callbacks) {
   const section = container.createDiv("memos-stats-section");
   const header = section.createDiv("memos-stats-header");
   const chevron = header.createSpan("memos-stats-chevron");
-  (0, import_obsidian.setIcon)(chevron, collapsed ? "chevron-right" : "chevron-down");
-  header.createSpan({ cls: "memos-stats-title", text: "Stats" });
+  (0, import_obsidian2.setIcon)(chevron, collapsed ? "chevron-right" : "chevron-down");
+  header.createSpan({ cls: "memos-stats-title", text: i18n.statsTitle });
   header.addEventListener("click", () => {
     callbacks.onToggle();
   });
@@ -221,10 +437,10 @@ function renderStatsSection(container, stats, collapsed, callbacks) {
   if (!collapsed) {
     renderHeatmap(content, stats.dailyCounts, callbacks.onDateClick);
     const numbers = content.createDiv("memos-stats-numbers");
-    renderStatCard(numbers, "\u603B\u8BA1", String(stats.total));
-    renderStatCard(numbers, "\u8FDE\u7EED", String(stats.streak), "\u5929");
-    renderStatCard(numbers, "\u4ECA\u65E5", String(stats.today));
-    renderStatCard(numbers, "\u672C\u6708", String(stats.thisMonth));
+    renderStatCard(numbers, i18n.statTotal, String(stats.total));
+    renderStatCard(numbers, i18n.statStreak, String(stats.streak), i18n.statStreakUnit);
+    renderStatCard(numbers, i18n.statToday, String(stats.today));
+    renderStatCard(numbers, i18n.statThisMonth, String(stats.thisMonth));
   }
 }
 function renderStatCard(container, label, value, unit) {
@@ -238,7 +454,7 @@ function renderStatCard(container, label, value, unit) {
 }
 
 // src/export-image.ts
-var import_obsidian2 = require("obsidian");
+var import_obsidian3 = require("obsidian");
 var LIGHT_THEME = {
   bgGradientStart: "#ffffff",
   bgGradientEnd: "#f8f9fa",
@@ -508,7 +724,7 @@ function buildExportCard(memo, options) {
   card.appendChild(meta);
   return card;
 }
-var ExportModal = class extends import_obsidian2.Modal {
+var ExportModal = class extends import_obsidian3.Modal {
   constructor(app, plugin, memo) {
     super(app);
     this.plugin = plugin;
@@ -542,12 +758,12 @@ var ExportModal = class extends import_obsidian2.Modal {
     const btnRow = contentEl.createDiv("memos-export-btn-row");
     const saveBtn = btnRow.createEl("button", {
       cls: "memos-export-btn mod-cta",
-      text: "Save as PNG"
+      text: i18n.saveAsPng
     });
     saveBtn.addEventListener("click", () => this.handleSave(isDarkMode));
     const copyBtn = btnRow.createEl("button", {
       cls: "memos-export-btn",
-      text: "Copy to clipboard"
+      text: i18n.copyToClipboard
     });
     copyBtn.addEventListener("click", () => this.handleCopy(isDarkMode));
   }
@@ -566,7 +782,7 @@ var ExportModal = class extends import_obsidian2.Modal {
     try {
       const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
       const fname = this.buildFilename();
-      if (import_obsidian2.Platform.isMobile) {
+      if (import_obsidian3.Platform.isMobile) {
         await this.handleMobileSave(blob, fname);
       } else {
         const url = URL.createObjectURL(blob);
@@ -577,12 +793,12 @@ var ExportModal = class extends import_obsidian2.Modal {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        new import_obsidian2.Notice("Image saved!");
+        new import_obsidian3.Notice(i18n.imageSaved);
       }
       this.close();
     } catch (err) {
-      new import_obsidian2.Notice(
-        `Export failed: ${err instanceof Error ? err.message : String(err)}`
+      new import_obsidian3.Notice(
+        t("exportFailed", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }
@@ -602,7 +818,7 @@ var ExportModal = class extends import_obsidian2.Modal {
     const vaultPath = `${saveFolder}/${fname}`;
     const arrayBuf = await blob.arrayBuffer();
     await this.app.vault.createBinary(vaultPath, arrayBuf);
-    new import_obsidian2.Notice(`Image saved to ${vaultPath}`);
+    new import_obsidian3.Notice(t("imageSavedTo", { path: vaultPath }));
   }
   async handleCopy(isDarkMode) {
     try {
@@ -610,11 +826,11 @@ var ExportModal = class extends import_obsidian2.Modal {
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": blob })
       ]);
-      new import_obsidian2.Notice("Image copied to clipboard!");
+      new import_obsidian3.Notice(i18n.imageCopied);
       this.close();
     } catch (err) {
-      new import_obsidian2.Notice(
-        `Copy failed: ${err instanceof Error ? err.message : String(err)}`
+      new import_obsidian3.Notice(
+        t("copyFailed", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }
@@ -624,7 +840,7 @@ var ExportModal = class extends import_obsidian2.Modal {
 };
 
 // src/canvas-export.ts
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 var CARD_W = 260;
 var CARD_H = 160;
 var GAP_Y = 20;
@@ -632,7 +848,7 @@ var GROUP_GAP_X = 80;
 async function exportToCanvas(app, memos, canvasName) {
   var _a;
   if (memos.length === 0) {
-    new import_obsidian3.Notice("No memos to export.");
+    new import_obsidian4.Notice(i18n.noMemosToExport);
     return;
   }
   const groups = /* @__PURE__ */ new Map();
@@ -661,24 +877,24 @@ async function exportToCanvas(app, memos, canvasName) {
   }
   const canvasData = { nodes, edges: [] };
   const filename = canvasName || `Memo Board ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.canvas`;
-  const path = (0, import_obsidian3.normalizePath)(filename);
+  const path = (0, import_obsidian4.normalizePath)(filename);
   const content = JSON.stringify(canvasData, null, 2);
   const existing = app.vault.getAbstractFileByPath(path);
-  if (existing && existing instanceof import_obsidian3.TFile) {
+  if (existing && existing instanceof import_obsidian4.TFile) {
     await app.vault.modify(existing, content);
   } else {
     await app.vault.create(path, content);
   }
   const canvasFile = app.vault.getAbstractFileByPath(path);
-  if (canvasFile && canvasFile instanceof import_obsidian3.TFile) {
+  if (canvasFile && canvasFile instanceof import_obsidian4.TFile) {
     const leaf = app.workspace.getLeaf("tab");
     await leaf.openFile(canvasFile);
   }
-  new import_obsidian3.Notice(`Exported ${memos.length} memos to Canvas!`);
+  new import_obsidian4.Notice(t("exportedToCanvas", { count: memos.length }));
 }
 
 // src/view.ts
-var _MemosView = class extends import_obsidian4.ItemView {
+var _MemosView = class extends import_obsidian5.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.activeTag = null;
@@ -692,7 +908,7 @@ var _MemosView = class extends import_obsidian4.ItemView {
     return VIEW_TYPE_MEMOS;
   }
   getDisplayText() {
-    return "Memos";
+    return i18n.memosTitle;
   }
   getIcon() {
     return "sticky-note";
@@ -709,22 +925,22 @@ var _MemosView = class extends import_obsidian4.ItemView {
   async onOpen() {
     this.contentEl.addClass("memos-view");
     await this.refresh();
-    const folderPrefix = (0, import_obsidian4.normalizePath)(this.plugin.settings.saveFolder) + "/";
+    const folderPrefix = (0, import_obsidian5.normalizePath)(this.plugin.settings.saveFolder) + "/";
     this.registerEvent(
       this.app.vault.on("create", (file) => {
-        if (file instanceof import_obsidian4.TFile && file.path.startsWith(folderPrefix))
+        if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix))
           this.debouncedRefresh();
       })
     );
     this.registerEvent(
       this.app.vault.on("delete", (file) => {
-        if (file instanceof import_obsidian4.TFile && file.path.startsWith(folderPrefix))
+        if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix))
           this.debouncedRefresh();
       })
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (file instanceof import_obsidian4.TFile && file.path.startsWith(folderPrefix))
+        if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix))
           this.debouncedRefresh();
       })
     );
@@ -751,14 +967,14 @@ var _MemosView = class extends import_obsidian4.ItemView {
     this.renderCards(cardsContainer);
   }
   async loadMemos() {
-    const folder = (0, import_obsidian4.normalizePath)(this.plugin.settings.saveFolder);
+    const folder = (0, import_obsidian5.normalizePath)(this.plugin.settings.saveFolder);
     const abstractFolder = this.app.vault.getAbstractFileByPath(folder);
-    if (!abstractFolder || !(abstractFolder instanceof import_obsidian4.TFolder)) {
+    if (!abstractFolder || !(abstractFolder instanceof import_obsidian5.TFolder)) {
       this.memos = [];
       return;
     }
     const files = abstractFolder.children.filter(
-      (f) => f instanceof import_obsidian4.TFile && f.name.endsWith(".md")
+      (f) => f instanceof import_obsidian5.TFile && f.name.endsWith(".md")
     );
     const results = [];
     for (const file of files) {
@@ -790,7 +1006,7 @@ var _MemosView = class extends import_obsidian4.ItemView {
     ).length;
     left.createSpan({
       cls: "memos-count",
-      text: `${count} memo${count !== 1 ? "s" : ""}`
+      text: i18n.memoCount(count)
     });
     if (this.activeTag) {
       const pill = left.createSpan({ cls: "memos-active-filter-pill" });
@@ -813,25 +1029,25 @@ var _MemosView = class extends import_obsidian4.ItemView {
     const right = el.createDiv("memos-toolbar-right");
     const captureBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "New memo" }
+      attr: { "aria-label": i18n.newMemo }
     });
-    (0, import_obsidian4.setIcon)(captureBtn, "pencil");
+    (0, import_obsidian5.setIcon)(captureBtn, "pencil");
     captureBtn.addEventListener("click", () => {
       this.plugin.activateCaptureView();
     });
     const randomBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "Random review" }
+      attr: { "aria-label": i18n.randomReview }
     });
-    (0, import_obsidian4.setIcon)(randomBtn, "dice");
+    (0, import_obsidian5.setIcon)(randomBtn, "dice");
     randomBtn.addEventListener("click", () => {
       this.handleRandomReview();
     });
     const canvasBtn = right.createDiv({
       cls: "memos-toolbar-btn",
-      attr: { "aria-label": "Send to Canvas" }
+      attr: { "aria-label": i18n.sendToCanvas }
     });
-    (0, import_obsidian4.setIcon)(canvasBtn, "layout-dashboard");
+    (0, import_obsidian5.setIcon)(canvasBtn, "layout-dashboard");
     canvasBtn.addEventListener("click", () => {
       const filtered = this.getFilteredMemos();
       exportToCanvas(this.app, filtered);
@@ -842,7 +1058,7 @@ var _MemosView = class extends import_obsidian4.ItemView {
     const filtered = this.getFilteredMemos();
     if (filtered.length === 0) {
       const empty = el.createDiv("memos-empty");
-      empty.createSpan({ text: "No memos yet. Start capturing your thoughts!" });
+      empty.createSpan({ text: i18n.noMemosYet });
       return;
     }
     const groups = /* @__PURE__ */ new Map();
@@ -889,9 +1105,9 @@ var _MemosView = class extends import_obsidian4.ItemView {
     );
     const shareBtn = footerRight.createDiv({
       cls: "memos-card-share-btn",
-      attr: { "aria-label": "Export as image" }
+      attr: { "aria-label": i18n.exportAsImage }
     });
-    (0, import_obsidian4.setIcon)(shareBtn, "share");
+    (0, import_obsidian5.setIcon)(shareBtn, "share");
     shareBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       new ExportModal(this.app, this.plugin, memo).open();
@@ -1066,13 +1282,13 @@ MemosView.IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
 MemosView.EMBED_RE = /!\[\[(.+?)\]\]/g;
 
 // src/capture-view.ts
-var import_obsidian5 = require("obsidian");
+var import_obsidian6 = require("obsidian");
 var IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
-var ImageSuggestModal = class extends import_obsidian5.FuzzySuggestModal {
+var ImageSuggestModal = class extends import_obsidian6.FuzzySuggestModal {
   constructor(app, onChoose) {
     super(app);
     this.onChoose = onChoose;
-    this.setPlaceholder("\u641C\u7D22\u56FE\u7247\u6587\u4EF6\u2026");
+    this.setPlaceholder(i18n.searchImages);
   }
   getItems() {
     return this.app.vault.getFiles().filter(
@@ -1086,12 +1302,12 @@ var ImageSuggestModal = class extends import_obsidian5.FuzzySuggestModal {
     this.onChoose(file);
   }
 };
-var NoteSuggestModal = class extends import_obsidian5.FuzzySuggestModal {
+var NoteSuggestModal = class extends import_obsidian6.FuzzySuggestModal {
   constructor(app, onChoose, onDismiss) {
     super(app);
     this.onChoose = onChoose;
     this.onDismiss = onDismiss;
-    this.setPlaceholder("\u641C\u7D22\u7B14\u8BB0\u2026");
+    this.setPlaceholder(i18n.searchNotes);
   }
   getItems() {
     return this.app.vault.getMarkdownFiles();
@@ -1109,7 +1325,7 @@ var NoteSuggestModal = class extends import_obsidian5.FuzzySuggestModal {
     }, 50);
   }
 };
-var CaptureItemView = class extends import_obsidian5.ItemView {
+var CaptureItemView = class extends import_obsidian6.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     /** Explicit tags added via the pill UI (without leading #). */
@@ -1126,7 +1342,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     return VIEW_TYPE_CAPTURE;
   }
   getDisplayText() {
-    return "Quick Capture";
+    return i18n.quickCaptureTitle;
   }
   getIcon() {
     return "pencil";
@@ -1137,9 +1353,9 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     container.addClass("memos-capture-card-container");
     const closeBtn = container.createEl("button", {
       cls: "memos-capture-close clickable-icon",
-      attr: { "aria-label": "\u8FD4\u56DE" }
+      attr: { "aria-label": i18n.back }
     });
-    (0, import_obsidian5.setIcon)(closeBtn, "arrow-left");
+    (0, import_obsidian6.setIcon)(closeBtn, "arrow-left");
     closeBtn.addEventListener("click", async () => {
       await this.plugin.activateView();
       this.leaf.detach();
@@ -1148,7 +1364,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     const textareaWrap = card.createDiv("memos-capture-card-textarea-wrap");
     this.textarea = textareaWrap.createEl("textarea", {
       cls: "memos-capture-card-textarea",
-      attr: { placeholder: "What's on your mind?" }
+      attr: { placeholder: i18n.whatsOnYourMind }
     });
     this.textarea.addEventListener("input", () => {
       this.handleWikilinkTrigger();
@@ -1158,7 +1374,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     this.renderTags();
     if (this.plugin.settings.enableMood) {
       const moodRow = card.createDiv("memos-capture-meta-row");
-      moodRow.createSpan({ cls: "memos-capture-meta-label", text: "Mood" });
+      moodRow.createSpan({ cls: "memos-capture-meta-label", text: i18n.mood });
       const moodPills = moodRow.createDiv("memos-capture-meta-pills");
       for (const emoji of this.plugin.settings.moodOptions) {
         const pill = moodPills.createSpan({ cls: "memos-capture-meta-pill", text: emoji });
@@ -1174,7 +1390,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     }
     if (this.plugin.settings.enableSource) {
       const sourceRow = card.createDiv("memos-capture-meta-row");
-      sourceRow.createSpan({ cls: "memos-capture-meta-label", text: "Source" });
+      sourceRow.createSpan({ cls: "memos-capture-meta-label", text: i18n.source });
       const sourcePills = sourceRow.createDiv("memos-capture-meta-pills");
       for (const src of this.plugin.settings.sourceOptions) {
         const pill = sourcePills.createSpan({ cls: "memos-capture-meta-pill", text: src });
@@ -1194,9 +1410,9 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     const footerRight = footer.createDiv("memos-capture-card-footer-right");
     const imageBtn = footerLeft.createEl("button", {
       cls: "memos-capture-card-foot-btn clickable-icon",
-      attr: { "aria-label": "\u63D2\u5165\u56FE\u7247" }
+      attr: { "aria-label": i18n.insertImage }
     });
-    (0, import_obsidian5.setIcon)(imageBtn, "image");
+    (0, import_obsidian6.setIcon)(imageBtn, "image");
     imageBtn.addEventListener("click", () => {
       new ImageSuggestModal(this.app, (file) => {
         this.insertAtCursor(`![[${file.name}]]`);
@@ -1204,21 +1420,21 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     });
     const tagBtn = footerLeft.createEl("button", {
       cls: "memos-capture-card-foot-btn clickable-icon",
-      attr: { "aria-label": "\u6DFB\u52A0\u6807\u7B7E" }
+      attr: { "aria-label": i18n.addTag }
     });
-    (0, import_obsidian5.setIcon)(tagBtn, "hash");
+    (0, import_obsidian6.setIcon)(tagBtn, "hash");
     tagBtn.addEventListener("click", () => {
       this.showTagInput();
     });
     if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
       footerLeft.createSpan({
         cls: "memos-capture-card-hint",
-        text: `\u56FA\u5B9A\u6807\u7B7E: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`
+        text: t("fixedTagHint", { tag: this.plugin.settings.fixedTag.replace(/^#+/, "") })
       });
     }
     const saveBtn = footerRight.createEl("button", {
       cls: "memos-capture-card-save",
-      text: "\u4FDD\u5B58 Memo"
+      text: i18n.saveMemo
     });
     saveBtn.addEventListener("click", () => {
       this.handleSave();
@@ -1246,12 +1462,12 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
         text: "\xD7"
       });
       removeBtn.addEventListener("click", () => {
-        this.tags = this.tags.filter((t) => t !== tag);
+        this.tags = this.tags.filter((t2) => t2 !== tag);
         this.renderTags();
       });
     }
     const addBtn = this.tagsContainer.createDiv("memos-capture-card-tag-add");
-    addBtn.setText("+ \u6DFB\u52A0\u6807\u7B7E");
+    addBtn.setText(i18n.addTagButton);
     addBtn.addEventListener("click", () => {
       this.showTagInput(addBtn);
     });
@@ -1266,7 +1482,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
     const input = document.createElement("input");
     input.type = "text";
     input.className = "memos-capture-card-tag-input";
-    input.placeholder = "\u6807\u7B7E\u540D\u2026";
+    input.placeholder = i18n.tagPlaceholder;
     target.replaceWith(input);
     input.focus();
     let composing = false;
@@ -1356,7 +1572,7 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
   async handleSave() {
     const trimmed = this.textarea.value.trim();
     if (!trimmed) {
-      new import_obsidian5.Notice("Memo cannot be empty.");
+      new import_obsidian6.Notice(i18n.memoEmpty);
       return;
     }
     const explicitTags = [...this.tags];
@@ -1369,22 +1585,22 @@ var CaptureItemView = class extends import_obsidian5.ItemView {
       meta.source = this.selectedSource;
     try {
       await this.plugin.saveMemo(trimmed, allTags, Object.keys(meta).length > 0 ? meta : void 0);
-      new import_obsidian5.Notice("Memo saved!");
+      new import_obsidian6.Notice(i18n.memoSaved);
       await this.plugin.activateView();
       this.leaf.detach();
     } catch (err) {
-      new import_obsidian5.Notice(
-        `Failed to save memo: ${err instanceof Error ? err.message : String(err)}`
+      new import_obsidian6.Notice(
+        t("failedToSave", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }
 };
 
 // src/settings.ts
-var import_obsidian7 = require("obsidian");
+var import_obsidian8 = require("obsidian");
 
 // src/flomo-import.ts
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 function htmlToMarkdown(contentEl) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   const lines = [];
@@ -1458,7 +1674,7 @@ function buildMemoFile(memo) {
     iso = (/* @__PURE__ */ new Date()).toISOString();
   }
   const tagYaml = memo.tags.length > 0 ? `tags:
-${memo.tags.map((t) => `  - ${t}`).join("\n")}` : "tags: []";
+${memo.tags.map((t2) => `  - ${t2}`).join("\n")}` : "tags: []";
   const frontmatter = `---
 created: ${iso}
 type: memo
@@ -1485,16 +1701,16 @@ async function importFlomoHtml(app, htmlContent, saveFolder) {
   var _a, _b, _c, _d;
   const memos = parseFlomoHtml(htmlContent);
   if (memos.length === 0) {
-    new import_obsidian6.Notice("No memos found in the HTML file.");
+    new import_obsidian7.Notice(i18n.noMemosInHtml);
     return 0;
   }
-  const folder = (0, import_obsidian6.normalizePath)(saveFolder);
+  const folder = (0, import_obsidian7.normalizePath)(saveFolder);
   if (!app.vault.getAbstractFileByPath(folder)) {
     await app.vault.createFolder(folder);
   }
   let imported = 0;
   const existingFiles = new Set(
-    (_d = (_c = (_b = (_a = app.vault.getAbstractFileByPath(folder)) == null ? void 0 : _a.children) == null ? void 0 : _b.filter((f) => f instanceof import_obsidian6.TFile)) == null ? void 0 : _c.map((f) => f.name)) != null ? _d : []
+    (_d = (_c = (_b = (_a = app.vault.getAbstractFileByPath(folder)) == null ? void 0 : _a.children) == null ? void 0 : _b.filter((f) => f instanceof import_obsidian7.TFile)) == null ? void 0 : _c.map((f) => f.name)) != null ? _d : []
   );
   for (let i = 0; i < memos.length; i++) {
     const memo = memos[i];
@@ -1502,7 +1718,7 @@ async function importFlomoHtml(app, htmlContent, saveFolder) {
     if (existingFiles.has(filename))
       continue;
     const fileContent = buildMemoFile(memo);
-    const filePath = (0, import_obsidian6.normalizePath)(`${folder}/${filename}`);
+    const filePath = (0, import_obsidian7.normalizePath)(`${folder}/${filename}`);
     try {
       await app.vault.create(filePath, fileContent);
       imported++;
@@ -1514,7 +1730,7 @@ async function importFlomoHtml(app, htmlContent, saveFolder) {
 }
 
 // src/settings.ts
-var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
+var MemosSettingTab = class extends import_obsidian8.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1522,14 +1738,14 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian7.Setting(containerEl).setName("Memos Settings").setHeading();
-    new import_obsidian7.Setting(containerEl).setName("Save folder").setDesc("Folder where new memos are saved (relative to vault root).").addText(
+    new import_obsidian8.Setting(containerEl).setName(i18n.memosSettings).setHeading();
+    new import_obsidian8.Setting(containerEl).setName(i18n.saveFolder).setDesc(i18n.saveFolderDesc).addText(
       (text) => text.setPlaceholder("00-Inbox").setValue(this.plugin.settings.saveFolder).onChange(async (value) => {
         this.plugin.settings.saveFolder = value.trim() || "00-Inbox";
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Use fixed tag").setDesc("Automatically add a tag to every memo you capture.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName(i18n.useFixedTag).setDesc(i18n.useFixedTagDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.useFixedTag).onChange(async (value) => {
         this.plugin.settings.useFixedTag = value;
         await this.plugin.saveSettings();
@@ -1537,23 +1753,21 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
       })
     );
     if (this.plugin.settings.useFixedTag) {
-      new import_obsidian7.Setting(containerEl).setName("Fixed tag value").setDesc("This tag will be added to every memo (without #).").addText(
+      new import_obsidian8.Setting(containerEl).setName(i18n.fixedTagValue).setDesc(i18n.fixedTagValueDesc).addText(
         (text) => text.setPlaceholder("memo").setValue(this.plugin.settings.fixedTag).onChange(async (value) => {
           this.plugin.settings.fixedTag = value.trim().replace(/^#+/, "");
           await this.plugin.saveSettings();
         })
       );
     }
-    new import_obsidian7.Setting(containerEl).setName("Quick capture entry note").setDesc(
-      `Path to the entry note that triggers the capture modal when opened. Use with the iOS widget's "Open a specific note" feature.`
-    ).addText(
+    new import_obsidian8.Setting(containerEl).setName(i18n.captureEntryNote).setDesc(i18n.captureEntryNoteDesc).addText(
       (text) => text.setPlaceholder("Quick Capture.md").setValue(this.plugin.settings.captureNotePath).onChange(async (value) => {
         this.plugin.settings.captureNotePath = value.trim() || "Quick Capture.md";
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Extended metadata").setHeading();
-    new import_obsidian7.Setting(containerEl).setName("Enable mood").setDesc("Show mood picker when capturing memos. Adds a mood field to frontmatter for Dataview queries.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName(i18n.extendedMetadata).setHeading();
+    new import_obsidian8.Setting(containerEl).setName(i18n.enableMood).setDesc(i18n.enableMoodDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enableMood).onChange(async (value) => {
         this.plugin.settings.enableMood = value;
         await this.plugin.saveSettings();
@@ -1561,14 +1775,14 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
       })
     );
     if (this.plugin.settings.enableMood) {
-      new import_obsidian7.Setting(containerEl).setName("Mood options").setDesc("Comma-separated emojis for the mood picker.").addText(
+      new import_obsidian8.Setting(containerEl).setName(i18n.moodOptions).setDesc(i18n.moodOptionsDesc).addText(
         (text) => text.setPlaceholder("\u{1F4A1}, \u{1F914}, \u{1F60A}, \u{1F624}, \u{1F4D6}").setValue(this.plugin.settings.moodOptions.join(", ")).onChange(async (value) => {
           this.plugin.settings.moodOptions = value.split(",").map((s) => s.trim()).filter(Boolean);
           await this.plugin.saveSettings();
         })
       );
     }
-    new import_obsidian7.Setting(containerEl).setName("Enable source").setDesc("Show source picker when capturing memos. Adds a source field to frontmatter for Dataview queries.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName(i18n.enableSource).setDesc(i18n.enableSourceDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enableSource).onChange(async (value) => {
         this.plugin.settings.enableSource = value;
         await this.plugin.saveSettings();
@@ -1576,15 +1790,15 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
       })
     );
     if (this.plugin.settings.enableSource) {
-      new import_obsidian7.Setting(containerEl).setName("Source options").setDesc("Comma-separated source labels (e.g. thought, kindle, web).").addText(
+      new import_obsidian8.Setting(containerEl).setName(i18n.sourceOptions).setDesc(i18n.sourceOptionsDesc).addText(
         (text) => text.setPlaceholder("thought, kindle, web, conversation, podcast").setValue(this.plugin.settings.sourceOptions.join(", ")).onChange(async (value) => {
           this.plugin.settings.sourceOptions = value.split(",").map((s) => s.trim()).filter(Boolean);
           await this.plugin.saveSettings();
         })
       );
     }
-    new import_obsidian7.Setting(containerEl).setName("Image export").setHeading();
-    new import_obsidian7.Setting(containerEl).setName("Show author name").setDesc("Display your name at the bottom of exported memo images.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName(i18n.imageExport).setHeading();
+    new import_obsidian8.Setting(containerEl).setName(i18n.showAuthorName).setDesc(i18n.showAuthorNameDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showAuthorInExport).onChange(async (value) => {
         this.plugin.settings.showAuthorInExport = value;
         await this.plugin.saveSettings();
@@ -1592,24 +1806,22 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
       })
     );
     if (this.plugin.settings.showAuthorInExport) {
-      new import_obsidian7.Setting(containerEl).setName("Author name").setDesc("Your name or brand to show on exported images.").addText(
+      new import_obsidian8.Setting(containerEl).setName(i18n.authorName).setDesc(i18n.authorNameDesc).addText(
         (text) => text.setPlaceholder("Your name").setValue(this.plugin.settings.authorName).onChange(async (value) => {
           this.plugin.settings.authorName = value.trim();
           await this.plugin.saveSettings();
         })
       );
     }
-    new import_obsidian7.Setting(containerEl).setName("Show branding").setDesc('Display "Quick Memos for Obsidian" at the bottom of exported images.').addToggle(
+    new import_obsidian8.Setting(containerEl).setName(i18n.showBranding).setDesc(i18n.showBrandingDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showBrandingInExport).onChange(async (value) => {
         this.plugin.settings.showBrandingInExport = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Import").setHeading();
-    new import_obsidian7.Setting(containerEl).setName("Import from Flomo").setDesc(
-      "Select the HTML file exported from Flomo. Each memo will be converted to a .md file with proper frontmatter and saved to the save folder. Duplicate imports are automatically skipped."
-    ).addButton(
-      (btn) => btn.setButtonText("Choose HTML file").setCta().onClick(() => {
+    new import_obsidian8.Setting(containerEl).setName(i18n.importHeading).setHeading();
+    new import_obsidian8.Setting(containerEl).setName(i18n.importFromFlomo).setDesc(i18n.importFromFlomoDesc).addButton(
+      (btn) => btn.setButtonText(i18n.chooseHtmlFile).setCta().onClick(() => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = ".html,.htm";
@@ -1618,7 +1830,7 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
           const file = (_a = input.files) == null ? void 0 : _a[0];
           if (!file)
             return;
-          new import_obsidian7.Notice(`Reading ${file.name}...`);
+          new import_obsidian8.Notice(t("readingFile", { name: file.name }));
           try {
             const html = await file.text();
             const count = await importFlomoHtml(
@@ -1627,13 +1839,13 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
               this.plugin.settings.saveFolder
             );
             if (count > 0) {
-              new import_obsidian7.Notice(`Successfully imported ${count} memos from Flomo!`);
+              new import_obsidian8.Notice(t("importSuccess", { count }));
             } else {
-              new import_obsidian7.Notice("No new memos to import (all already exist or file is empty).");
+              new import_obsidian8.Notice(i18n.importNoNew);
             }
           } catch (err) {
-            new import_obsidian7.Notice(
-              `Import failed: ${err instanceof Error ? err.message : String(err)}`
+            new import_obsidian8.Notice(
+              t("importFailed", { err: err instanceof Error ? err.message : String(err) })
             );
           }
         });
@@ -1644,55 +1856,45 @@ var MemosSettingTab = class extends import_obsidian7.PluginSettingTab {
 };
 
 // src/plugin.ts
-var MemosPlugin = class extends import_obsidian8.Plugin {
+var MemosPlugin = class extends import_obsidian9.Plugin {
   async onload() {
     await this.loadSettings();
     this.registerView(VIEW_TYPE_MEMOS, (leaf) => new MemosView(leaf, this));
     this.registerView(VIEW_TYPE_CAPTURE, (leaf) => new CaptureItemView(leaf, this));
-    this.addRibbonIcon("sticky-note", "Open Memos view", () => {
+    this.addRibbonIcon("sticky-note", i18n.openMemosView, () => {
       this.activateView();
     });
     this.addCommand({
       id: "open-memos-capture",
-      name: "Quick capture",
+      name: i18n.quickCapture,
       callback: () => {
         this.activateCaptureView();
       }
     });
     this.addCommand({
       id: "open-memos-view",
-      name: "Open Memos view",
+      name: i18n.openMemosView,
       callback: () => {
         this.activateView();
       }
     });
     this.addCommand({
       id: "create-capture-note",
-      name: "Create quick capture entry note",
+      name: i18n.createCaptureNote,
       callback: async () => {
         const path = this.settings.captureNotePath;
         if (this.app.vault.getAbstractFileByPath(path)) {
-          new import_obsidian8.Notice(`Entry note already exists: ${path}`);
+          new import_obsidian9.Notice(t("entryNoteExists", { path }));
           return;
         }
-        const content = [
-          "This note is used by the Memos plugin as a quick capture entry point.",
-          "",
-          "**How to use on iOS:**",
-          "1. Long-press the Obsidian home screen widget",
-          "2. Tap Edit Widget",
-          '3. Set "Open a specific note" to this note',
-          "4. Tapping the widget will open Obsidian and automatically show the capture dialog",
-          "",
-          "> Do not delete this note if you want the widget shortcut to work."
-        ].join("\n");
+        const content = i18n.entryNoteContent;
         await this.app.vault.create(path, content);
-        new import_obsidian8.Notice(`Created entry note: ${path}`);
+        new import_obsidian9.Notice(t("createdEntryNote", { path }));
       }
     });
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file && file.path === (0, import_obsidian8.normalizePath)(this.settings.captureNotePath)) {
+        if (file && file.path === (0, import_obsidian9.normalizePath)(this.settings.captureNotePath)) {
           this.activateCaptureView();
         }
       })
@@ -1700,11 +1902,11 @@ var MemosPlugin = class extends import_obsidian8.Plugin {
     this.addSettingTab(new MemosSettingTab(this.app, this));
     this.registerObsidianProtocolHandler("memo", async (params) => {
       const content = (params.content || params.text || "").trim();
-      const tags = (params.tags || "").split(",").map((t) => t.trim()).filter(Boolean);
+      const tags = (params.tags || "").split(",").map((t2) => t2.trim()).filter(Boolean);
       const mood = (params.mood || "").trim();
       const source = (params.source || "").trim();
       if (!content) {
-        new import_obsidian8.Notice("Memo content is empty.");
+        new import_obsidian9.Notice(i18n.memoContentEmpty);
         return;
       }
       const meta = {};
@@ -1713,7 +1915,7 @@ var MemosPlugin = class extends import_obsidian8.Plugin {
       if (source)
         meta.source = source;
       await this.saveMemo(content, tags, Object.keys(meta).length > 0 ? meta : void 0);
-      new import_obsidian8.Notice("Memo saved!");
+      new import_obsidian9.Notice(i18n.memoSaved);
     });
     this.registerEvent(
       this.app.workspace.on("editor-menu", (menu, editor) => {
@@ -1721,10 +1923,10 @@ var MemosPlugin = class extends import_obsidian8.Plugin {
         if (!selection)
           return;
         menu.addItem((item) => {
-          item.setTitle("Save as Memo").setIcon("sticky-note").onClick(async () => {
+          item.setTitle(i18n.saveAsMemo).setIcon("sticky-note").onClick(async () => {
             const tags = extractInlineTags(selection);
             await this.saveMemo(selection, tags);
-            new import_obsidian8.Notice("Selection saved as Memo!");
+            new import_obsidian9.Notice(i18n.selectionSavedAsMemo);
           });
         });
       })
@@ -1748,7 +1950,7 @@ var MemosPlugin = class extends import_obsidian8.Plugin {
       setTimeout(() => observer.disconnect(), 5e3);
     });
     this.app.workspace.onLayoutReady(() => {
-      if (import_obsidian8.Platform.isMobile) {
+      if (import_obsidian9.Platform.isMobile) {
         this.activateView();
       }
     });
@@ -1782,14 +1984,14 @@ var MemosPlugin = class extends import_obsidian8.Plugin {
     if (this.settings.useFixedTag && this.settings.fixedTag) {
       allTags.push(this.settings.fixedTag.replace(/^#+/, ""));
     }
-    for (const t of tags) {
-      const clean = t.replace(/^#+/, "");
+    for (const t2 of tags) {
+      const clean = t2.replace(/^#+/, "");
       if (clean && !allTags.includes(clean)) {
         allTags.push(clean);
       }
     }
     const tagYaml = allTags.length > 0 ? `tags:
-${allTags.map((t) => `  - ${t}`).join("\n")}` : "tags: []";
+${allTags.map((t2) => `  - ${t2}`).join("\n")}` : "tags: []";
     let extraYaml = "";
     if (meta == null ? void 0 : meta.mood)
       extraYaml += `mood: "${meta.mood}"
@@ -1806,11 +2008,11 @@ ${extraYaml}---
 
 `;
     const fileContent = frontmatter + content;
-    const folder = (0, import_obsidian8.normalizePath)(this.settings.saveFolder);
+    const folder = (0, import_obsidian9.normalizePath)(this.settings.saveFolder);
     if (!this.app.vault.getAbstractFileByPath(folder)) {
       await this.app.vault.createFolder(folder);
     }
-    const filePath = (0, import_obsidian8.normalizePath)(`${folder}/${filename}`);
+    const filePath = (0, import_obsidian9.normalizePath)(`${folder}/${filename}`);
     await this.app.vault.create(filePath, fileContent);
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_MEMOS)) {
       const view = leaf.view;

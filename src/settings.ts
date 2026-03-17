@@ -2,6 +2,7 @@ import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 
 import type MemosPlugin from "./plugin";
 import { importFlomoHtml } from "./flomo-import";
+import { i18n, t } from "./i18n";
 
 export class MemosSettingTab extends PluginSettingTab {
   plugin: MemosPlugin;
@@ -14,11 +15,11 @@ export class MemosSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new Setting(containerEl).setName("Memos Settings").setHeading();
+    new Setting(containerEl).setName(i18n.memosSettings).setHeading();
 
     new Setting(containerEl)
-      .setName("Save folder")
-      .setDesc("Folder where new memos are saved (relative to vault root).")
+      .setName(i18n.saveFolder)
+      .setDesc(i18n.saveFolderDesc)
       .addText((text) =>
         text
           .setPlaceholder("00-Inbox")
@@ -30,8 +31,8 @@ export class MemosSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Use fixed tag")
-      .setDesc("Automatically add a tag to every memo you capture.")
+      .setName(i18n.useFixedTag)
+      .setDesc(i18n.useFixedTagDesc)
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.useFixedTag)
@@ -44,8 +45,8 @@ export class MemosSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.useFixedTag) {
       new Setting(containerEl)
-        .setName("Fixed tag value")
-        .setDesc("This tag will be added to every memo (without #).")
+        .setName(i18n.fixedTagValue)
+        .setDesc(i18n.fixedTagValueDesc)
         .addText((text) =>
           text
             .setPlaceholder("memo")
@@ -58,11 +59,8 @@ export class MemosSettingTab extends PluginSettingTab {
     }
 
     new Setting(containerEl)
-      .setName("Quick capture entry note")
-      .setDesc(
-        "Path to the entry note that triggers the capture modal when opened. " +
-        "Use with the iOS widget's \"Open a specific note\" feature."
-      )
+      .setName(i18n.captureEntryNote)
+      .setDesc(i18n.captureEntryNoteDesc)
       .addText((text) =>
         text
           .setPlaceholder("Quick Capture.md")
@@ -73,11 +71,11 @@ export class MemosSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl).setName("Extended metadata").setHeading();
+    new Setting(containerEl).setName(i18n.extendedMetadata).setHeading();
 
     new Setting(containerEl)
-      .setName("Enable mood")
-      .setDesc("Show mood picker when capturing memos. Adds a mood field to frontmatter for Dataview queries.")
+      .setName(i18n.enableMood)
+      .setDesc(i18n.enableMoodDesc)
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.enableMood)
@@ -90,8 +88,8 @@ export class MemosSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.enableMood) {
       new Setting(containerEl)
-        .setName("Mood options")
-        .setDesc("Comma-separated emojis for the mood picker.")
+        .setName(i18n.moodOptions)
+        .setDesc(i18n.moodOptionsDesc)
         .addText((text) =>
           text
             .setPlaceholder("💡, 🤔, 😊, 😤, 📖")
@@ -107,8 +105,8 @@ export class MemosSettingTab extends PluginSettingTab {
     }
 
     new Setting(containerEl)
-      .setName("Enable source")
-      .setDesc("Show source picker when capturing memos. Adds a source field to frontmatter for Dataview queries.")
+      .setName(i18n.enableSource)
+      .setDesc(i18n.enableSourceDesc)
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.enableSource)
@@ -121,8 +119,8 @@ export class MemosSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.enableSource) {
       new Setting(containerEl)
-        .setName("Source options")
-        .setDesc("Comma-separated source labels (e.g. thought, kindle, web).")
+        .setName(i18n.sourceOptions)
+        .setDesc(i18n.sourceOptionsDesc)
         .addText((text) =>
           text
             .setPlaceholder("thought, kindle, web, conversation, podcast")
@@ -137,11 +135,11 @@ export class MemosSettingTab extends PluginSettingTab {
         );
     }
 
-    new Setting(containerEl).setName("Image export").setHeading();
+    new Setting(containerEl).setName(i18n.imageExport).setHeading();
 
     new Setting(containerEl)
-      .setName("Show author name")
-      .setDesc("Display your name at the bottom of exported memo images.")
+      .setName(i18n.showAuthorName)
+      .setDesc(i18n.showAuthorNameDesc)
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showAuthorInExport)
@@ -154,8 +152,8 @@ export class MemosSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.showAuthorInExport) {
       new Setting(containerEl)
-        .setName("Author name")
-        .setDesc("Your name or brand to show on exported images.")
+        .setName(i18n.authorName)
+        .setDesc(i18n.authorNameDesc)
         .addText((text) =>
           text
             .setPlaceholder("Your name")
@@ -168,8 +166,8 @@ export class MemosSettingTab extends PluginSettingTab {
     }
 
     new Setting(containerEl)
-      .setName("Show branding")
-      .setDesc('Display "Quick Memos for Obsidian" at the bottom of exported images.')
+      .setName(i18n.showBranding)
+      .setDesc(i18n.showBrandingDesc)
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showBrandingInExport)
@@ -179,18 +177,14 @@ export class MemosSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl).setName("Import").setHeading();
+    new Setting(containerEl).setName(i18n.importHeading).setHeading();
 
     new Setting(containerEl)
-      .setName("Import from Flomo")
-      .setDesc(
-        "Select the HTML file exported from Flomo. " +
-        "Each memo will be converted to a .md file with proper frontmatter and saved to the save folder. " +
-        "Duplicate imports are automatically skipped."
-      )
+      .setName(i18n.importFromFlomo)
+      .setDesc(i18n.importFromFlomoDesc)
       .addButton((btn) =>
         btn
-          .setButtonText("Choose HTML file")
+          .setButtonText(i18n.chooseHtmlFile)
           .setCta()
           .onClick(() => {
             const input = document.createElement("input");
@@ -200,7 +194,7 @@ export class MemosSettingTab extends PluginSettingTab {
               const file = input.files?.[0];
               if (!file) return;
 
-              new Notice(`Reading ${file.name}...`);
+              new Notice(t("readingFile", { name: file.name }));
               try {
                 const html = await file.text();
                 const count = await importFlomoHtml(
@@ -209,13 +203,13 @@ export class MemosSettingTab extends PluginSettingTab {
                   this.plugin.settings.saveFolder
                 );
                 if (count > 0) {
-                  new Notice(`Successfully imported ${count} memos from Flomo!`);
+                  new Notice(t("importSuccess", { count }));
                 } else {
-                  new Notice("No new memos to import (all already exist or file is empty).");
+                  new Notice(i18n.importNoNew);
                 }
               } catch (err) {
                 new Notice(
-                  `Import failed: ${err instanceof Error ? err.message : String(err)}`
+                  t("importFailed", { err: err instanceof Error ? err.message : String(err) })
                 );
               }
             });

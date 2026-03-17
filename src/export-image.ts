@@ -1,6 +1,7 @@
 import { App, Modal, Notice, Platform } from "obsidian";
 
 import { MemoNote } from "./types";
+import { i18n, t } from "./i18n";
 import { INLINE_TAG_RE } from "./constants";
 import type MemosPlugin from "./plugin";
 
@@ -474,13 +475,13 @@ export class ExportModal extends Modal {
 
     const saveBtn = btnRow.createEl("button", {
       cls: "memos-export-btn mod-cta",
-      text: "Save as PNG",
+      text: i18n.saveAsPng,
     });
     saveBtn.addEventListener("click", () => this.handleSave(isDarkMode));
 
     const copyBtn = btnRow.createEl("button", {
       cls: "memos-export-btn",
-      text: "Copy to clipboard",
+      text: i18n.copyToClipboard,
     });
     copyBtn.addEventListener("click", () => this.handleCopy(isDarkMode));
   }
@@ -517,13 +518,13 @@ export class ExportModal extends Modal {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        new Notice("Image saved!");
+        new Notice(i18n.imageSaved);
       }
 
       this.close();
     } catch (err) {
       new Notice(
-        `Export failed: ${err instanceof Error ? err.message : String(err)}`
+        t("exportFailed", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }
@@ -547,7 +548,7 @@ export class ExportModal extends Modal {
     const vaultPath = `${saveFolder}/${fname}`;
     const arrayBuf = await blob.arrayBuffer();
     await this.app.vault.createBinary(vaultPath, arrayBuf);
-    new Notice(`Image saved to ${vaultPath}`);
+    new Notice(t("imageSavedTo", { path: vaultPath }));
   }
 
   async handleCopy(isDarkMode: boolean) {
@@ -558,11 +559,11 @@ export class ExportModal extends Modal {
         new ClipboardItem({ "image/png": blob }),
       ]);
 
-      new Notice("Image copied to clipboard!");
+      new Notice(i18n.imageCopied);
       this.close();
     } catch (err) {
       new Notice(
-        `Copy failed: ${err instanceof Error ? err.message : String(err)}`
+        t("copyFailed", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }

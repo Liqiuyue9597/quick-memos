@@ -12,6 +12,7 @@ import { MemosView } from "./view";
 import { CaptureItemView } from "./capture-view";
 import { MemosSettingTab } from "./settings";
 import { extractInlineTags } from "./utils";
+import { i18n, t } from "./i18n";
 
 export default class MemosPlugin extends Plugin {
   settings!: MemosSettings;
@@ -23,13 +24,13 @@ export default class MemosPlugin extends Plugin {
     this.registerView(VIEW_TYPE_CAPTURE, (leaf) => new CaptureItemView(leaf, this));
 
     // Ribbon icon → open Memos view (fullscreen on mobile)
-    this.addRibbonIcon("sticky-note", "Open Memos view", () => {
+    this.addRibbonIcon("sticky-note", i18n.openMemosView, () => {
       this.activateView();
     });
 
     this.addCommand({
       id: "open-memos-capture",
-      name: "Quick capture",
+      name: i18n.quickCapture,
       callback: () => {
         this.activateCaptureView();
       },
@@ -37,7 +38,7 @@ export default class MemosPlugin extends Plugin {
 
     this.addCommand({
       id: "open-memos-view",
-      name: "Open Memos view",
+      name: i18n.openMemosView,
       callback: () => {
         this.activateView();
       },
@@ -45,26 +46,16 @@ export default class MemosPlugin extends Plugin {
 
     this.addCommand({
       id: "create-capture-note",
-      name: "Create quick capture entry note",
+      name: i18n.createCaptureNote,
       callback: async () => {
         const path = this.settings.captureNotePath;
         if (this.app.vault.getAbstractFileByPath(path)) {
-          new Notice(`Entry note already exists: ${path}`);
+          new Notice(t("entryNoteExists", { path }));
           return;
         }
-        const content = [
-          "This note is used by the Memos plugin as a quick capture entry point.",
-          "",
-          "**How to use on iOS:**",
-          "1. Long-press the Obsidian home screen widget",
-          "2. Tap Edit Widget",
-          '3. Set "Open a specific note" to this note',
-          "4. Tapping the widget will open Obsidian and automatically show the capture dialog",
-          "",
-          "> Do not delete this note if you want the widget shortcut to work.",
-        ].join("\n");
+        const content = i18n.entryNoteContent;
         await this.app.vault.create(path, content);
-        new Notice(`Created entry note: ${path}`);
+        new Notice(t("createdEntryNote", { path }));
       },
     });
 
@@ -90,7 +81,7 @@ export default class MemosPlugin extends Plugin {
       const source = (params.source || "").trim();
 
       if (!content) {
-        new Notice("Memo content is empty.");
+        new Notice(i18n.memoContentEmpty);
         return;
       }
 
@@ -99,7 +90,7 @@ export default class MemosPlugin extends Plugin {
       if (source) meta.source = source;
 
       await this.saveMemo(content, tags, Object.keys(meta).length > 0 ? meta : undefined);
-      new Notice("Memo saved!");
+      new Notice(i18n.memoSaved);
     });
 
     // ── Right-click menu: Save selection as Memo ──
@@ -110,12 +101,12 @@ export default class MemosPlugin extends Plugin {
 
         menu.addItem((item) => {
           item
-            .setTitle("Save as Memo")
+            .setTitle(i18n.saveAsMemo)
             .setIcon("sticky-note")
             .onClick(async () => {
               const tags = extractInlineTags(selection);
               await this.saveMemo(selection, tags);
-              new Notice("Selection saved as Memo!");
+              new Notice(i18n.selectionSavedAsMemo);
             });
         });
       })

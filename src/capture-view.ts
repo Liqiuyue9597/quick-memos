@@ -3,6 +3,7 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, FuzzySuggestModal, TFile, App
 import { VIEW_TYPE_CAPTURE } from "./constants";
 import { extractInlineTags, parseTags } from "./utils";
 import type MemosPlugin from "./plugin";
+import { i18n, t } from "./i18n";
 
 const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
 
@@ -13,7 +14,7 @@ export class ImageSuggestModal extends FuzzySuggestModal<TFile> {
   constructor(app: App, onChoose: (file: TFile) => void) {
     super(app);
     this.onChoose = onChoose;
-    this.setPlaceholder("搜索图片文件…");
+    this.setPlaceholder(i18n.searchImages);
   }
 
   getItems(): TFile[] {
@@ -40,7 +41,7 @@ export class NoteSuggestModal extends FuzzySuggestModal<TFile> {
     super(app);
     this.onChoose = onChoose;
     this.onDismiss = onDismiss;
-    this.setPlaceholder("搜索笔记…");
+    this.setPlaceholder(i18n.searchNotes);
   }
 
   getItems(): TFile[] {
@@ -88,7 +89,7 @@ export class CaptureItemView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Quick Capture";
+    return i18n.quickCaptureTitle;
   }
 
   getIcon(): string {
@@ -103,7 +104,7 @@ export class CaptureItemView extends ItemView {
     // ── Close button (top-left floating circle) ──
     const closeBtn = container.createEl("button", {
       cls: "memos-capture-close clickable-icon",
-      attr: { "aria-label": "返回" },
+      attr: { "aria-label": i18n.back },
     });
     setIcon(closeBtn, "arrow-left");
     closeBtn.addEventListener("click", async () => {
@@ -118,7 +119,7 @@ export class CaptureItemView extends ItemView {
     const textareaWrap = card.createDiv("memos-capture-card-textarea-wrap");
     this.textarea = textareaWrap.createEl("textarea", {
       cls: "memos-capture-card-textarea",
-      attr: { placeholder: "What's on your mind?" },
+      attr: { placeholder: i18n.whatsOnYourMind },
     });
 
     // ── [[ wikilink trigger: detect "[[" input and open note suggest modal ──
@@ -134,7 +135,7 @@ export class CaptureItemView extends ItemView {
     // ── Mood picker (optional) ──
     if (this.plugin.settings.enableMood) {
       const moodRow = card.createDiv("memos-capture-meta-row");
-      moodRow.createSpan({ cls: "memos-capture-meta-label", text: "Mood" });
+      moodRow.createSpan({ cls: "memos-capture-meta-label", text: i18n.mood });
       const moodPills = moodRow.createDiv("memos-capture-meta-pills");
       for (const emoji of this.plugin.settings.moodOptions) {
         const pill = moodPills.createSpan({ cls: "memos-capture-meta-pill", text: emoji });
@@ -151,7 +152,7 @@ export class CaptureItemView extends ItemView {
     // ── Source picker (optional) ──
     if (this.plugin.settings.enableSource) {
       const sourceRow = card.createDiv("memos-capture-meta-row");
-      sourceRow.createSpan({ cls: "memos-capture-meta-label", text: "Source" });
+      sourceRow.createSpan({ cls: "memos-capture-meta-label", text: i18n.source });
       const sourcePills = sourceRow.createDiv("memos-capture-meta-pills");
       for (const src of this.plugin.settings.sourceOptions) {
         const pill = sourcePills.createSpan({ cls: "memos-capture-meta-pill", text: src });
@@ -176,7 +177,7 @@ export class CaptureItemView extends ItemView {
     // Image button
     const imageBtn = footerLeft.createEl("button", {
       cls: "memos-capture-card-foot-btn clickable-icon",
-      attr: { "aria-label": "插入图片" },
+      attr: { "aria-label": i18n.insertImage },
     });
     setIcon(imageBtn, "image");
     imageBtn.addEventListener("click", () => {
@@ -188,7 +189,7 @@ export class CaptureItemView extends ItemView {
     // Tag shortcut button (focuses the add-tag input)
     const tagBtn = footerLeft.createEl("button", {
       cls: "memos-capture-card-foot-btn clickable-icon",
-      attr: { "aria-label": "添加标签" },
+      attr: { "aria-label": i18n.addTag },
     });
     setIcon(tagBtn, "hash");
     tagBtn.addEventListener("click", () => {
@@ -199,14 +200,14 @@ export class CaptureItemView extends ItemView {
     if (this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag) {
       footerLeft.createSpan({
         cls: "memos-capture-card-hint",
-        text: `固定标签: #${this.plugin.settings.fixedTag.replace(/^#+/, "")}`,
+        text: t("fixedTagHint", { tag: this.plugin.settings.fixedTag.replace(/^#+/, "") }),
       });
     }
 
     // Save button
     const saveBtn = footerRight.createEl("button", {
       cls: "memos-capture-card-save",
-      text: "保存 Memo",
+      text: i18n.saveMemo,
     });
     saveBtn.addEventListener("click", () => {
       this.handleSave();
@@ -249,7 +250,7 @@ export class CaptureItemView extends ItemView {
 
     // "+ 添加标签" button
     const addBtn = this.tagsContainer.createDiv("memos-capture-card-tag-add");
-    addBtn.setText("+ 添加标签");
+    addBtn.setText(i18n.addTagButton);
     addBtn.addEventListener("click", () => {
       this.showTagInput(addBtn);
     });
@@ -268,7 +269,7 @@ export class CaptureItemView extends ItemView {
     const input = document.createElement("input");
     input.type = "text";
     input.className = "memos-capture-card-tag-input";
-    input.placeholder = "标签名…";
+    input.placeholder = i18n.tagPlaceholder;
     target.replaceWith(input);
     input.focus();
 
@@ -371,7 +372,7 @@ export class CaptureItemView extends ItemView {
   private async handleSave() {
     const trimmed = this.textarea.value.trim();
     if (!trimmed) {
-      new Notice("Memo cannot be empty.");
+      new Notice(i18n.memoEmpty);
       return;
     }
 
@@ -385,12 +386,12 @@ export class CaptureItemView extends ItemView {
 
     try {
       await this.plugin.saveMemo(trimmed, allTags, Object.keys(meta).length > 0 ? meta : undefined);
-      new Notice("Memo saved!");
+      new Notice(i18n.memoSaved);
       await this.plugin.activateView();
       this.leaf.detach();
     } catch (err) {
       new Notice(
-        `Failed to save memo: ${err instanceof Error ? err.message : String(err)}`
+        t("failedToSave", { err: err instanceof Error ? err.message : String(err) })
       );
     }
   }

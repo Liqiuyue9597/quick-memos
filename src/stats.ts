@@ -1,5 +1,6 @@
 import { setIcon } from "obsidian";
 import { MemoNote, MemoStats } from "./types";
+import { i18n } from "./i18n";
 
 /**
  * Pure function: compute statistics from an array of memos.
@@ -72,8 +73,8 @@ export function renderHeatmap(
   dailyCounts: Map<string, number>,
   onDateClick: (date: string) => void
 ) {
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const MONTHS = i18n.months;
+  const WEEKDAYS = i18n.weekdays;
 
   const wrap = container.createDiv("memos-heatmap-wrap");
 
@@ -142,7 +143,7 @@ export function renderHeatmap(
       const cell = heatmap.createDiv({
         cls: `memos-heatmap-cell memos-heatmap-level-${level}`,
         attr: {
-          "data-tooltip": `${label}: ${count} memo${count !== 1 ? "s" : ""}`,
+          "data-tooltip": i18n.heatmapTooltip(label, count),
           "data-date": label,
         },
       });
@@ -175,7 +176,7 @@ export function renderStatsSection(
   const header = section.createDiv("memos-stats-header");
   const chevron = header.createSpan("memos-stats-chevron");
   setIcon(chevron, collapsed ? "chevron-right" : "chevron-down");
-  header.createSpan({ cls: "memos-stats-title", text: "Stats" });
+  header.createSpan({ cls: "memos-stats-title", text: i18n.statsTitle });
 
   header.addEventListener("click", () => {
     callbacks.onToggle();
@@ -192,10 +193,10 @@ export function renderStatsSection(
 
     // Stat numbers
     const numbers = content.createDiv("memos-stats-numbers");
-    renderStatCard(numbers, "总计", String(stats.total));
-    renderStatCard(numbers, "连续", String(stats.streak), "天");
-    renderStatCard(numbers, "今日", String(stats.today));
-    renderStatCard(numbers, "本月", String(stats.thisMonth));
+    renderStatCard(numbers, i18n.statTotal, String(stats.total));
+    renderStatCard(numbers, i18n.statStreak, String(stats.streak), i18n.statStreakUnit);
+    renderStatCard(numbers, i18n.statToday, String(stats.today));
+    renderStatCard(numbers, i18n.statThisMonth, String(stats.thisMonth));
   }
 }
 

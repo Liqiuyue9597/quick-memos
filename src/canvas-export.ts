@@ -1,5 +1,6 @@
 import { App, normalizePath, Notice, TFile } from "obsidian";
 import { MemoNote } from "./types";
+import { i18n, t } from "./i18n";
 
 /* ---------------------------------------------------------------------------
    Canvas data structures (subset of Obsidian's Canvas JSON format)
@@ -39,7 +40,7 @@ export async function exportToCanvas(
   canvasName?: string
 ) {
   if (memos.length === 0) {
-    new Notice("No memos to export.");
+    new Notice(i18n.noMemosToExport);
     return;
   }
 
@@ -94,5 +95,5 @@ export async function exportToCanvas(
     await leaf.openFile(canvasFile);
   }
 
-  new Notice(`Exported ${memos.length} memos to Canvas!`);
+  new Notice(t("exportedToCanvas", { count: memos.length }));
 }
