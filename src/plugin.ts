@@ -71,7 +71,24 @@ export default class MemosPlugin extends Plugin {
 
     // ── URI handler: obsidian://memo-capture → open Capture UI ──
     this.registerObsidianProtocolHandler("memo-capture", () => {
-      this.activateCaptureView();
+      if (this.app.workspace.layoutReady) {
+        this.activateCaptureView();
+      } else {
+        this.app.workspace.onLayoutReady(() => {
+          this.activateCaptureView();
+        });
+      }
+    });
+
+    // ── URI handler: obsidian://memo-view → open Memos view ──
+    this.registerObsidianProtocolHandler("memo-view", () => {
+      if (this.app.workspace.layoutReady) {
+        this.activateView();
+      } else {
+        this.app.workspace.onLayoutReady(() => {
+          this.activateView();
+        });
+      }
     });
 
     // ── Right-click menu: Save selection as Memo ──

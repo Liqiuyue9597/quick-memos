@@ -1954,7 +1954,22 @@ var MemosPlugin = class extends import_obsidian9.Plugin {
       new import_obsidian9.Notice(i18n.memoSaved);
     });
     this.registerObsidianProtocolHandler("memo-capture", () => {
-      this.activateCaptureView();
+      if (this.app.workspace.layoutReady) {
+        this.activateCaptureView();
+      } else {
+        this.app.workspace.onLayoutReady(() => {
+          this.activateCaptureView();
+        });
+      }
+    });
+    this.registerObsidianProtocolHandler("memo-view", () => {
+      if (this.app.workspace.layoutReady) {
+        this.activateView();
+      } else {
+        this.app.workspace.onLayoutReady(() => {
+          this.activateView();
+        });
+      }
     });
     this.registerEvent(
       this.app.workspace.on("editor-menu", (menu, editor) => {
