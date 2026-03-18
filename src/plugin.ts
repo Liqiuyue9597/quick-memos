@@ -44,30 +44,6 @@ export default class MemosPlugin extends Plugin {
       },
     });
 
-    this.addCommand({
-      id: "create-capture-note",
-      name: i18n.createCaptureNote,
-      callback: async () => {
-        const path = this.settings.captureNotePath;
-        if (this.app.vault.getAbstractFileByPath(path)) {
-          new Notice(t("entryNoteExists", { path }));
-          return;
-        }
-        const content = i18n.entryNoteContent;
-        await this.app.vault.create(path, content);
-        new Notice(t("createdEntryNote", { path }));
-      },
-    });
-
-    // Listen for file-open events → auto-trigger Capture view for the entry note
-    this.registerEvent(
-      this.app.workspace.on("file-open", (file) => {
-        if (file && file.path === normalizePath(this.settings.captureNotePath)) {
-          this.activateCaptureView();
-        }
-      })
-    );
-
     this.addSettingTab(new MemosSettingTab(this.app, this));
 
     // ── URI handler: obsidian://memo?content=...&tags=... ──
@@ -91,6 +67,11 @@ export default class MemosPlugin extends Plugin {
 
       await this.saveMemo(content, tags, Object.keys(meta).length > 0 ? meta : undefined);
       new Notice(i18n.memoSaved);
+    });
+
+    // ── URI handler: obsidian://memo-capture → open Capture UI ──
+    this.registerObsidianProtocolHandler("memo-capture", () => {
+      this.activateCaptureView();
     });
 
     // ── Right-click menu: Save selection as Memo ──

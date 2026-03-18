@@ -9,9 +9,6 @@ interface Messages {
   // ── Plugin ──
   openMemosView: string;
   quickCapture: string;
-  createCaptureNote: string;
-  entryNoteExists: string;           // ${path}
-  createdEntryNote: string;           // ${path}
   memoContentEmpty: string;
   memoSaved: string;
   saveAsMemo: string;
@@ -51,8 +48,6 @@ interface Messages {
   useFixedTagDesc: string;
   fixedTagValue: string;
   fixedTagValueDesc: string;
-  captureEntryNote: string;
-  captureEntryNoteDesc: string;
   extendedMetadata: string;
   enableMood: string;
   enableMoodDesc: string;
@@ -104,17 +99,11 @@ interface Messages {
 
   // ── Flomo import ──
   noMemosInHtml: string;
-
-  // ── Entry note content ──
-  entryNoteContent: string;
 }
 
 const en: Messages = {
   openMemosView: "Open Memos view",
   quickCapture: "Quick capture",
-  createCaptureNote: "Create quick capture entry note",
-  entryNoteExists: "Entry note already exists: ${path}",
-  createdEntryNote: "Created entry note: ${path}",
   memoContentEmpty: "Memo content is empty.",
   memoSaved: "Memo saved!",
   saveAsMemo: "Save as Memo",
@@ -151,8 +140,6 @@ const en: Messages = {
   useFixedTagDesc: "Automatically add a tag to every memo you capture.",
   fixedTagValue: "Fixed tag value",
   fixedTagValueDesc: "This tag will be added to every memo (without #).",
-  captureEntryNote: "Quick capture entry note",
-  captureEntryNoteDesc: 'Path to the entry note that triggers the capture modal when opened. Use with the iOS widget\'s "Open a specific note" feature.',
   extendedMetadata: "Extended metadata",
   enableMood: "Enable mood",
   enableMoodDesc: "Show mood picker when capturing memos. Adds a mood field to frontmatter for Dataview queries.",
@@ -200,26 +187,11 @@ const en: Messages = {
   exportedToCanvas: "Exported ${count} memos to Canvas!",
 
   noMemosInHtml: "No memos found in the HTML file.",
-
-  entryNoteContent: [
-    "This note is used by the Memos plugin as a quick capture entry point.",
-    "",
-    "**How to use on iOS:**",
-    "1. Long-press the Obsidian home screen widget",
-    "2. Tap Edit Widget",
-    '3. Set "Open a specific note" to this note',
-    "4. Tapping the widget will open Obsidian and automatically show the capture dialog",
-    "",
-    "> Do not delete this note if you want the widget shortcut to work.",
-  ].join("\n"),
 };
 
 const zh: Messages = {
   openMemosView: "打开 Memos 视图",
   quickCapture: "快速记录",
-  createCaptureNote: "创建快速记录入口笔记",
-  entryNoteExists: "入口笔记已存在：${path}",
-  createdEntryNote: "已创建入口笔记：${path}",
   memoContentEmpty: "Memo 内容不能为空。",
   memoSaved: "Memo 已保存！",
   saveAsMemo: "保存为 Memo",
@@ -256,8 +228,6 @@ const zh: Messages = {
   useFixedTagDesc: "自动为每条 memo 添加一个标签。",
   fixedTagValue: "固定标签值",
   fixedTagValueDesc: "自动添加的标签（不含 #）。",
-  captureEntryNote: "快速记录入口笔记",
-  captureEntryNoteDesc: "打开此笔记时自动触发记录弹窗。配合 iOS Widget 的「打开指定笔记」功能使用。",
   extendedMetadata: "扩展元数据",
   enableMood: "启用心情",
   enableMoodDesc: "记录时显示心情选择器，在 frontmatter 中添加 mood 字段，支持 Dataview 查询。",
@@ -305,18 +275,6 @@ const zh: Messages = {
   exportedToCanvas: "已导出 ${count} 条 memo 到 Canvas！",
 
   noMemosInHtml: "HTML 文件中未找到 memo。",
-
-  entryNoteContent: [
-    "此笔记是 Memos 插件的快速记录入口。",
-    "",
-    "**iOS 使用方法：**",
-    "1. 长按主屏幕上的 Obsidian 小组件",
-    "2. 点击「编辑小组件」",
-    "3. 将「打开指定笔记」设为此笔记",
-    "4. 点击小组件即可自动打开记录弹窗",
-    "",
-    "> 如果需要使用 Widget 快捷入口，请勿删除此笔记。",
-  ].join("\n"),
 };
 
 /** Helper: simple template string replacement. */

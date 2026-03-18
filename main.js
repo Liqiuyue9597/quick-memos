@@ -43,7 +43,6 @@ var DEFAULT_SETTINGS = {
   saveFolder: "00-Inbox",
   useFixedTag: false,
   fixedTag: "",
-  captureNotePath: "Quick Capture.md",
   statsCollapsed: false,
   authorName: "",
   showAuthorInExport: false,
@@ -68,7 +67,7 @@ function extractInlineTags(text) {
   return tags;
 }
 function parseTags(input) {
-  return input.split(/[\s,，]+/).map((t2) => t2.replace(/^#+/, "").trim()).filter((t2) => t2.length > 0);
+  return input.split(/[\s,，]+/).map((t3) => t3.replace(/^#+/, "").trim()).filter((t3) => t3.length > 0);
 }
 
 // src/memo-parser.ts
@@ -85,9 +84,9 @@ function parseMemoContent(raw, fm, frontmatterEndOffset) {
   const inlineTags = extractInlineTags(body);
   const fmTags = [];
   if (Array.isArray(fm["tags"])) {
-    for (const t2 of fm["tags"]) {
-      if (typeof t2 === "string")
-        fmTags.push(t2);
+    for (const t3 of fm["tags"]) {
+      if (typeof t3 === "string")
+        fmTags.push(t3);
     }
   }
   const tags = Array.from(/* @__PURE__ */ new Set([...fmTags, ...inlineTags]));
@@ -102,9 +101,6 @@ var import_obsidian = require("obsidian");
 var en = {
   openMemosView: "Open Memos view",
   quickCapture: "Quick capture",
-  createCaptureNote: "Create quick capture entry note",
-  entryNoteExists: "Entry note already exists: ${path}",
-  createdEntryNote: "Created entry note: ${path}",
   memoContentEmpty: "Memo content is empty.",
   memoSaved: "Memo saved!",
   saveAsMemo: "Save as Memo",
@@ -138,8 +134,6 @@ var en = {
   useFixedTagDesc: "Automatically add a tag to every memo you capture.",
   fixedTagValue: "Fixed tag value",
   fixedTagValueDesc: "This tag will be added to every memo (without #).",
-  captureEntryNote: "Quick capture entry note",
-  captureEntryNoteDesc: `Path to the entry note that triggers the capture modal when opened. Use with the iOS widget's "Open a specific note" feature.`,
   extendedMetadata: "Extended metadata",
   enableMood: "Enable mood",
   enableMoodDesc: "Show mood picker when capturing memos. Adds a mood field to frontmatter for Dataview queries.",
@@ -182,25 +176,11 @@ var en = {
   copyFailed: "Copy failed: ${err}",
   noMemosToExport: "No memos to export.",
   exportedToCanvas: "Exported ${count} memos to Canvas!",
-  noMemosInHtml: "No memos found in the HTML file.",
-  entryNoteContent: [
-    "This note is used by the Memos plugin as a quick capture entry point.",
-    "",
-    "**How to use on iOS:**",
-    "1. Long-press the Obsidian home screen widget",
-    "2. Tap Edit Widget",
-    '3. Set "Open a specific note" to this note',
-    "4. Tapping the widget will open Obsidian and automatically show the capture dialog",
-    "",
-    "> Do not delete this note if you want the widget shortcut to work."
-  ].join("\n")
+  noMemosInHtml: "No memos found in the HTML file."
 };
 var zh = {
   openMemosView: "\u6253\u5F00 Memos \u89C6\u56FE",
   quickCapture: "\u5FEB\u901F\u8BB0\u5F55",
-  createCaptureNote: "\u521B\u5EFA\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u7B14\u8BB0",
-  entryNoteExists: "\u5165\u53E3\u7B14\u8BB0\u5DF2\u5B58\u5728\uFF1A${path}",
-  createdEntryNote: "\u5DF2\u521B\u5EFA\u5165\u53E3\u7B14\u8BB0\uFF1A${path}",
   memoContentEmpty: "Memo \u5185\u5BB9\u4E0D\u80FD\u4E3A\u7A7A\u3002",
   memoSaved: "Memo \u5DF2\u4FDD\u5B58\uFF01",
   saveAsMemo: "\u4FDD\u5B58\u4E3A Memo",
@@ -234,8 +214,6 @@ var zh = {
   useFixedTagDesc: "\u81EA\u52A8\u4E3A\u6BCF\u6761 memo \u6DFB\u52A0\u4E00\u4E2A\u6807\u7B7E\u3002",
   fixedTagValue: "\u56FA\u5B9A\u6807\u7B7E\u503C",
   fixedTagValueDesc: "\u81EA\u52A8\u6DFB\u52A0\u7684\u6807\u7B7E\uFF08\u4E0D\u542B #\uFF09\u3002",
-  captureEntryNote: "\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u7B14\u8BB0",
-  captureEntryNoteDesc: "\u6253\u5F00\u6B64\u7B14\u8BB0\u65F6\u81EA\u52A8\u89E6\u53D1\u8BB0\u5F55\u5F39\u7A97\u3002\u914D\u5408 iOS Widget \u7684\u300C\u6253\u5F00\u6307\u5B9A\u7B14\u8BB0\u300D\u529F\u80FD\u4F7F\u7528\u3002",
   extendedMetadata: "\u6269\u5C55\u5143\u6570\u636E",
   enableMood: "\u542F\u7528\u5FC3\u60C5",
   enableMoodDesc: "\u8BB0\u5F55\u65F6\u663E\u793A\u5FC3\u60C5\u9009\u62E9\u5668\uFF0C\u5728 frontmatter \u4E2D\u6DFB\u52A0 mood \u5B57\u6BB5\uFF0C\u652F\u6301 Dataview \u67E5\u8BE2\u3002",
@@ -278,18 +256,7 @@ var zh = {
   copyFailed: "\u590D\u5236\u5931\u8D25\uFF1A${err}",
   noMemosToExport: "\u6CA1\u6709\u53EF\u5BFC\u51FA\u7684 memo\u3002",
   exportedToCanvas: "\u5DF2\u5BFC\u51FA ${count} \u6761 memo \u5230 Canvas\uFF01",
-  noMemosInHtml: "HTML \u6587\u4EF6\u4E2D\u672A\u627E\u5230 memo\u3002",
-  entryNoteContent: [
-    "\u6B64\u7B14\u8BB0\u662F Memos \u63D2\u4EF6\u7684\u5FEB\u901F\u8BB0\u5F55\u5165\u53E3\u3002",
-    "",
-    "**iOS \u4F7F\u7528\u65B9\u6CD5\uFF1A**",
-    "1. \u957F\u6309\u4E3B\u5C4F\u5E55\u4E0A\u7684 Obsidian \u5C0F\u7EC4\u4EF6",
-    "2. \u70B9\u51FB\u300C\u7F16\u8F91\u5C0F\u7EC4\u4EF6\u300D",
-    "3. \u5C06\u300C\u6253\u5F00\u6307\u5B9A\u7B14\u8BB0\u300D\u8BBE\u4E3A\u6B64\u7B14\u8BB0",
-    "4. \u70B9\u51FB\u5C0F\u7EC4\u4EF6\u5373\u53EF\u81EA\u52A8\u6253\u5F00\u8BB0\u5F55\u5F39\u7A97",
-    "",
-    "> \u5982\u679C\u9700\u8981\u4F7F\u7528 Widget \u5FEB\u6377\u5165\u53E3\uFF0C\u8BF7\u52FF\u5220\u9664\u6B64\u7B14\u8BB0\u3002"
-  ].join("\n")
+  noMemosInHtml: "HTML \u6587\u4EF6\u4E2D\u672A\u627E\u5230 memo\u3002"
 };
 function t(key, vars) {
   let val = i18n[key];
@@ -487,6 +454,52 @@ var BRANDING_FONT_SIZE = 10;
 var BRANDING_TEXT = "Quick Memos for Obsidian";
 var FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 var PIXEL_RATIO = 2;
+var IMAGE_EMBED_RE = /!\[\[([^\]]+)\]\]/g;
+var IMAGE_MAX_WIDTH = CARD_WIDTH - PADDING_X * 2;
+var IMAGE_MAX_HEIGHT = 300;
+function extractImageEmbeds(content) {
+  const names = [];
+  let m;
+  const re = new RegExp(IMAGE_EMBED_RE.source, IMAGE_EMBED_RE.flags);
+  while ((m = re.exec(content)) !== null) {
+    names.push(m[1]);
+  }
+  return names;
+}
+function stripImageEmbeds(content) {
+  return content.replace(IMAGE_EMBED_RE, "").trim();
+}
+async function loadVaultImage(app, filename) {
+  const files = app.vault.getFiles();
+  const imageFile = files.find(
+    (f) => f.name === filename || f.path.endsWith(filename)
+  );
+  if (!imageFile)
+    return null;
+  try {
+    const arrayBuf = await app.vault.readBinary(imageFile);
+    const blob = new Blob([arrayBuf]);
+    const url = URL.createObjectURL(blob);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  } catch (e) {
+    return null;
+  }
+}
+function fitImage(imgW, imgH, maxW, maxH) {
+  const ratio = Math.min(maxW / imgW, maxH / imgH, 1);
+  return { w: Math.round(imgW * ratio), h: Math.round(imgH * ratio) };
+}
 function parseContentSegments(content) {
   const lines = content.split("\n");
   const result = [];
@@ -546,27 +559,45 @@ function wrapSegmentLines(ctx, segments, maxWidth, fontSize) {
   }
   return visualLines;
 }
-async function generateImage(memo, options) {
+async function generateImage(app, memo, options) {
   const theme = options.isDarkMode ? DARK_THEME : LIGHT_THEME;
   const scale = PIXEL_RATIO;
   const maxTextWidth = CARD_WIDTH - PADDING_X * 2;
   const lineHeight = CONTENT_FONT_SIZE * CONTENT_LINE_HEIGHT;
+  const imageNames = extractImageEmbeds(memo.content);
+  const loadedImages = [];
+  for (const name of imageNames) {
+    const img = await loadVaultImage(app, name);
+    if (img && img.naturalWidth > 0) {
+      const { w, h } = fitImage(img.naturalWidth, img.naturalHeight, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT);
+      loadedImages.push({ img, w, h });
+    }
+  }
   const measureCanvas = document.createElement("canvas");
   measureCanvas.width = CARD_WIDTH * scale;
   measureCanvas.height = 1;
   const mCtx = measureCanvas.getContext("2d");
   mCtx.scale(scale, scale);
   mCtx.font = `normal ${CONTENT_FONT_SIZE}px ${FONT_FAMILY}`;
-  const segmentLines = parseContentSegments(memo.content);
+  const textContent = stripImageEmbeds(memo.content);
+  const segmentLines = parseContentSegments(textContent);
   const wrappedLines = wrapSegmentLines(mCtx, segmentLines, maxTextWidth, CONTENT_FONT_SIZE);
   const contentHeight = wrappedLines.length * lineHeight;
+  const imageGap = 8;
+  let totalImageHeight = 0;
+  if (loadedImages.length > 0) {
+    totalImageHeight = imageGap;
+    for (const { h } of loadedImages) {
+      totalImageHeight += h + imageGap;
+    }
+  }
   const metaGap = 20;
   const dividerHeight = 1;
   const metaPaddingTop = 14;
   const footerHeight = META_FONT_SIZE * 1.5;
   const brandingOnSeparateLine = options.showBranding && !!options.authorName;
   const brandingHeight = brandingOnSeparateLine ? BRANDING_FONT_SIZE + 16 : 0;
-  const totalHeight = PADDING_TOP + contentHeight + metaGap + dividerHeight + metaPaddingTop + footerHeight + brandingHeight + PADDING_BOTTOM;
+  const totalHeight = PADDING_TOP + contentHeight + totalImageHeight + metaGap + dividerHeight + metaPaddingTop + footerHeight + brandingHeight + PADDING_BOTTOM;
   const canvas = document.createElement("canvas");
   canvas.width = CARD_WIDTH * scale;
   canvas.height = totalHeight * scale;
@@ -592,7 +623,19 @@ async function generateImage(memo, options) {
     }
     y += lineHeight;
   }
-  const dividerY = PADDING_TOP + contentHeight + metaGap;
+  if (loadedImages.length > 0) {
+    y += imageGap;
+    for (const { img, w, h } of loadedImages) {
+      const imgX = PADDING_X + (maxTextWidth - w) / 2;
+      ctx.save();
+      roundRect(ctx, imgX, y - CONTENT_FONT_SIZE, w, h, 6);
+      ctx.clip();
+      ctx.drawImage(img, imgX, y - CONTENT_FONT_SIZE, w, h);
+      ctx.restore();
+      y += h + imageGap;
+    }
+  }
+  const dividerY = PADDING_TOP + contentHeight + totalImageHeight + metaGap;
   ctx.fillStyle = theme.metaBorderColor;
   ctx.fillRect(PADDING_X, dividerY, maxTextWidth, dividerHeight);
   const footerY = dividerY + dividerHeight + metaPaddingTop + META_FONT_SIZE;
@@ -678,15 +721,38 @@ function renderExportContent(content, container) {
     }
   }
 }
-function buildExportCard(memo, options) {
+async function buildExportCard(app, memo, options) {
   const card = document.createElement("div");
   card.className = "memos-export-card";
   if (options.isDarkMode)
     card.classList.add("memos-export-dark");
   const contentDiv = document.createElement("div");
   contentDiv.className = "memos-export-content";
-  renderExportContent(memo.content, contentDiv);
+  renderExportContent(stripImageEmbeds(memo.content), contentDiv);
   card.appendChild(contentDiv);
+  const imageNames = extractImageEmbeds(memo.content);
+  for (const name of imageNames) {
+    const files = app.vault.getFiles();
+    const imageFile = files.find(
+      (f) => f.name === name || f.path.endsWith(name)
+    );
+    if (!imageFile)
+      continue;
+    try {
+      const arrayBuf = await app.vault.readBinary(imageFile);
+      const blob = new Blob([arrayBuf]);
+      const url = URL.createObjectURL(blob);
+      const imgEl = document.createElement("img");
+      imgEl.src = url;
+      imgEl.style.maxWidth = `${IMAGE_MAX_WIDTH}px`;
+      imgEl.style.maxHeight = `${IMAGE_MAX_HEIGHT}px`;
+      imgEl.style.borderRadius = "6px";
+      imgEl.style.display = "block";
+      imgEl.style.margin = "8px auto";
+      card.appendChild(imgEl);
+    } catch (e) {
+    }
+  }
   const meta = document.createElement("div");
   meta.className = "memos-export-meta";
   const footer = document.createElement("div");
@@ -736,25 +802,23 @@ var ExportModal = class extends import_obsidian3.Modal {
     const isDarkMode = document.body.classList.contains("theme-dark");
     const authorName = this.plugin.settings.showAuthorInExport ? this.plugin.settings.authorName : void 0;
     const showBranding = this.plugin.settings.showBrandingInExport;
-    const cardEl = buildExportCard(this.memo, { authorName, isDarkMode, showBranding });
+    const cardEl = await buildExportCard(this.app, this.memo, { authorName, isDarkMode, showBranding });
     const previewContainer = contentEl.createDiv("memos-export-preview");
     const cardWrapper = previewContainer.createDiv("memos-export-card-wrapper");
     cardWrapper.appendChild(cardEl);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const containerWidth = previewContainer.clientWidth - 40;
-        const cardWidth = 440;
-        if (containerWidth < cardWidth) {
-          const scale = containerWidth / cardWidth;
-          cardEl.style.transform = `scale(${scale})`;
-          cardEl.style.transformOrigin = "top left";
-          const cardHeight = cardEl.offsetHeight;
-          cardWrapper.style.width = `${cardWidth * scale}px`;
-          cardWrapper.style.height = `${cardHeight * scale}px`;
-          cardWrapper.style.overflow = "hidden";
-        }
-      });
-    });
+    setTimeout(() => {
+      const containerWidth = previewContainer.clientWidth - 40;
+      const cardWidth = 440;
+      if (containerWidth > 0 && containerWidth < cardWidth) {
+        const scale = containerWidth / cardWidth;
+        cardEl.style.transform = `scale(${scale})`;
+        cardEl.style.transformOrigin = "top left";
+        const cardHeight = cardEl.offsetHeight;
+        cardWrapper.style.width = `${cardWidth * scale}px`;
+        cardWrapper.style.height = `${cardHeight * scale}px`;
+        cardWrapper.style.overflow = "hidden";
+      }
+    }, 50);
     const btnRow = contentEl.createDiv("memos-export-btn-row");
     const saveBtn = btnRow.createEl("button", {
       cls: "memos-export-btn mod-cta",
@@ -780,7 +844,7 @@ var ExportModal = class extends import_obsidian3.Modal {
   }
   async handleSave(isDarkMode) {
     try {
-      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
+      const blob = await generateImage(this.app, this.memo, this.getExportOptions(isDarkMode));
       const fname = this.buildFilename();
       if (import_obsidian3.Platform.isMobile) {
         await this.handleMobileSave(blob, fname);
@@ -822,7 +886,7 @@ var ExportModal = class extends import_obsidian3.Modal {
   }
   async handleCopy(isDarkMode) {
     try {
-      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
+      const blob = await generateImage(this.app, this.memo, this.getExportOptions(isDarkMode));
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": blob })
       ]);
@@ -835,7 +899,6 @@ var ExportModal = class extends import_obsidian3.Modal {
     }
   }
   onClose() {
-    this.contentEl.empty();
   }
 };
 
@@ -1462,7 +1525,7 @@ var CaptureItemView = class extends import_obsidian6.ItemView {
         text: "\xD7"
       });
       removeBtn.addEventListener("click", () => {
-        this.tags = this.tags.filter((t2) => t2 !== tag);
+        this.tags = this.tags.filter((t3) => t3 !== tag);
         this.renderTags();
       });
     }
@@ -1674,7 +1737,7 @@ function buildMemoFile(memo) {
     iso = (/* @__PURE__ */ new Date()).toISOString();
   }
   const tagYaml = memo.tags.length > 0 ? `tags:
-${memo.tags.map((t2) => `  - ${t2}`).join("\n")}` : "tags: []";
+${memo.tags.map((t3) => `  - ${t3}`).join("\n")}` : "tags: []";
   const frontmatter = `---
 created: ${iso}
 type: memo
@@ -1760,12 +1823,6 @@ var MemosSettingTab = class extends import_obsidian8.PluginSettingTab {
         })
       );
     }
-    new import_obsidian8.Setting(containerEl).setName(i18n.captureEntryNote).setDesc(i18n.captureEntryNoteDesc).addText(
-      (text) => text.setPlaceholder("Quick Capture.md").setValue(this.plugin.settings.captureNotePath).onChange(async (value) => {
-        this.plugin.settings.captureNotePath = value.trim() || "Quick Capture.md";
-        await this.plugin.saveSettings();
-      })
-    );
     new import_obsidian8.Setting(containerEl).setName(i18n.extendedMetadata).setHeading();
     new import_obsidian8.Setting(containerEl).setName(i18n.enableMood).setDesc(i18n.enableMoodDesc).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enableMood).onChange(async (value) => {
@@ -1878,31 +1935,10 @@ var MemosPlugin = class extends import_obsidian9.Plugin {
         this.activateView();
       }
     });
-    this.addCommand({
-      id: "create-capture-note",
-      name: i18n.createCaptureNote,
-      callback: async () => {
-        const path = this.settings.captureNotePath;
-        if (this.app.vault.getAbstractFileByPath(path)) {
-          new import_obsidian9.Notice(t("entryNoteExists", { path }));
-          return;
-        }
-        const content = i18n.entryNoteContent;
-        await this.app.vault.create(path, content);
-        new import_obsidian9.Notice(t("createdEntryNote", { path }));
-      }
-    });
-    this.registerEvent(
-      this.app.workspace.on("file-open", (file) => {
-        if (file && file.path === (0, import_obsidian9.normalizePath)(this.settings.captureNotePath)) {
-          this.activateCaptureView();
-        }
-      })
-    );
     this.addSettingTab(new MemosSettingTab(this.app, this));
     this.registerObsidianProtocolHandler("memo", async (params) => {
       const content = (params.content || params.text || "").trim();
-      const tags = (params.tags || "").split(",").map((t2) => t2.trim()).filter(Boolean);
+      const tags = (params.tags || "").split(",").map((t3) => t3.trim()).filter(Boolean);
       const mood = (params.mood || "").trim();
       const source = (params.source || "").trim();
       if (!content) {
@@ -1916,6 +1952,9 @@ var MemosPlugin = class extends import_obsidian9.Plugin {
         meta.source = source;
       await this.saveMemo(content, tags, Object.keys(meta).length > 0 ? meta : void 0);
       new import_obsidian9.Notice(i18n.memoSaved);
+    });
+    this.registerObsidianProtocolHandler("memo-capture", () => {
+      this.activateCaptureView();
     });
     this.registerEvent(
       this.app.workspace.on("editor-menu", (menu, editor) => {
@@ -1984,14 +2023,14 @@ var MemosPlugin = class extends import_obsidian9.Plugin {
     if (this.settings.useFixedTag && this.settings.fixedTag) {
       allTags.push(this.settings.fixedTag.replace(/^#+/, ""));
     }
-    for (const t2 of tags) {
-      const clean = t2.replace(/^#+/, "");
+    for (const t3 of tags) {
+      const clean = t3.replace(/^#+/, "");
       if (clean && !allTags.includes(clean)) {
         allTags.push(clean);
       }
     }
     const tagYaml = allTags.length > 0 ? `tags:
-${allTags.map((t2) => `  - ${t2}`).join("\n")}` : "tags: []";
+${allTags.map((t3) => `  - ${t3}`).join("\n")}` : "tags: []";
     let extraYaml = "";
     if (meta == null ? void 0 : meta.mood)
       extraYaml += `mood: "${meta.mood}"

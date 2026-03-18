@@ -60,6 +60,73 @@ const FONT_FAMILY =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 const PIXEL_RATIO = 2;
 
+/** Regex to match image embeds like ![[image.png]] */
+const IMAGE_EMBED_RE = /!\[\[([^\]]+)\]\]/g;
+
+/** Image dimensions for export */
+const IMAGE_MAX_WIDTH = CARD_WIDTH - PADDING_X * 2;
+const IMAGE_MAX_HEIGHT = 300;
+
+/** Extract image embed filenames from content. */
+function extractImageEmbeds(content: string): string[] {
+  const names: string[] = [];
+  let m: RegExpExecArray | null;
+  const re = new RegExp(IMAGE_EMBED_RE.source, IMAGE_EMBED_RE.flags);
+  while ((m = re.exec(content)) !== null) {
+    names.push(m[1]);
+  }
+  return names;
+}
+
+/** Strip image embed syntax from content text. */
+function stripImageEmbeds(content: string): string {
+  return content.replace(IMAGE_EMBED_RE, "").trim();
+}
+
+/** Load a vault image file as an HTMLImageElement. */
+async function loadVaultImage(app: App, filename: string): Promise<HTMLImageElement | null> {
+  // Find the file in the vault
+  const files = app.vault.getFiles();
+  const imageFile = files.find(
+    (f) => f.name === filename || f.path.endsWith(filename)
+  );
+  if (!imageFile) return null;
+
+  try {
+    const arrayBuf = await app.vault.readBinary(imageFile);
+    const blob = new Blob([arrayBuf]);
+    const url = URL.createObjectURL(blob);
+
+    return new Promise<HTMLImageElement>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null as unknown as HTMLImageElement);
+      };
+      img.src = url;
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calculate scaled dimensions to fit within max bounds while preserving aspect ratio.
+ */
+function fitImage(
+  imgW: number,
+  imgH: number,
+  maxW: number,
+  maxH: number
+): { w: number; h: number } {
+  const ratio = Math.min(maxW / imgW, maxH / imgH, 1);
+  return { w: Math.round(imgW * ratio), h: Math.round(imgH * ratio) };
+}
+
 /** A text segment: either plain text or a #tag. */
 interface TextSegment {
   text: string;
@@ -162,6 +229,7 @@ function wrapSegmentLines(
 
 /** Generate a PNG Blob by drawing directly onto a Canvas. */
 async function generateImage(
+  app: App,
   memo: MemoNote,
   options: { authorName?: string; isDarkMode: boolean; showBranding: boolean }
 ): Promise<Blob> {
@@ -169,6 +237,17 @@ async function generateImage(
   const scale = PIXEL_RATIO;
   const maxTextWidth = CARD_WIDTH - PADDING_X * 2;
   const lineHeight = CONTENT_FONT_SIZE * CONTENT_LINE_HEIGHT;
+
+  // --- Load images ---
+  const imageNames = extractImageEmbeds(memo.content);
+  const loadedImages: Array<{ img: HTMLImageElement; w: number; h: number }> = [];
+  for (const name of imageNames) {
+    const img = await loadVaultImage(app, name);
+    if (img && img.naturalWidth > 0) {
+      const { w, h } = fitImage(img.naturalWidth, img.naturalHeight, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT);
+      loadedImages.push({ img, w, h });
+    }
+  }
 
   // --- Measure pass: determine card height ---
   const measureCanvas = document.createElement("canvas");
@@ -178,10 +257,22 @@ async function generateImage(
   mCtx.scale(scale, scale);
   mCtx.font = `normal ${CONTENT_FONT_SIZE}px ${FONT_FAMILY}`;
 
-  const segmentLines = parseContentSegments(memo.content);
+  const textContent = stripImageEmbeds(memo.content);
+  const segmentLines = parseContentSegments(textContent);
   const wrappedLines = wrapSegmentLines(mCtx, segmentLines, maxTextWidth, CONTENT_FONT_SIZE);
 
   const contentHeight = wrappedLines.length * lineHeight;
+
+  // Calculate total image height
+  const imageGap = 8;
+  let totalImageHeight = 0;
+  if (loadedImages.length > 0) {
+    totalImageHeight = imageGap; // gap before first image
+    for (const { h } of loadedImages) {
+      totalImageHeight += h + imageGap;
+    }
+  }
+
   const metaGap = 20; // space between content and meta divider
   const dividerHeight = 1;
   const metaPaddingTop = 14;
@@ -192,6 +283,7 @@ async function generateImage(
   const totalHeight =
     PADDING_TOP +
     contentHeight +
+    totalImageHeight +
     metaGap +
     dividerHeight +
     metaPaddingTop +
@@ -231,8 +323,24 @@ async function generateImage(
     y += lineHeight;
   }
 
+  // --- Draw images ---
+  if (loadedImages.length > 0) {
+    y += imageGap;
+    for (const { img, w, h } of loadedImages) {
+      // Center the image horizontally
+      const imgX = PADDING_X + (maxTextWidth - w) / 2;
+      // Draw with rounded corners by clipping
+      ctx.save();
+      roundRect(ctx, imgX, y - CONTENT_FONT_SIZE, w, h, 6);
+      ctx.clip();
+      ctx.drawImage(img, imgX, y - CONTENT_FONT_SIZE, w, h);
+      ctx.restore();
+      y += h + imageGap;
+    }
+  }
+
   // --- Divider line ---
-  const dividerY = PADDING_TOP + contentHeight + metaGap;
+  const dividerY = PADDING_TOP + contentHeight + totalImageHeight + metaGap;
   ctx.fillStyle = theme.metaBorderColor;
   ctx.fillRect(PADDING_X, dividerY, maxTextWidth, dividerHeight);
 
@@ -353,19 +461,46 @@ function renderExportContent(content: string, container: HTMLElement) {
  * This uses CSS classes — it is only shown inside the modal, NOT used
  * for image generation (Canvas handles that directly).
  */
-export function buildExportCard(
+export async function buildExportCard(
+  app: App,
   memo: MemoNote,
   options: { authorName?: string; isDarkMode: boolean; showBranding: boolean }
-): HTMLDivElement {
+): Promise<HTMLDivElement> {
   const card = document.createElement("div");
   card.className = "memos-export-card";
   if (options.isDarkMode) card.classList.add("memos-export-dark");
 
-  // Content
+  // Content (text only, images stripped)
   const contentDiv = document.createElement("div");
   contentDiv.className = "memos-export-content";
-  renderExportContent(memo.content, contentDiv);
+  renderExportContent(stripImageEmbeds(memo.content), contentDiv);
   card.appendChild(contentDiv);
+
+  // Images
+  const imageNames = extractImageEmbeds(memo.content);
+  for (const name of imageNames) {
+    // For preview, create a blob URL that stays alive
+    const files = app.vault.getFiles();
+    const imageFile = files.find(
+      (f) => f.name === name || f.path.endsWith(name)
+    );
+    if (!imageFile) continue;
+    try {
+      const arrayBuf = await app.vault.readBinary(imageFile);
+      const blob = new Blob([arrayBuf]);
+      const url = URL.createObjectURL(blob);
+      const imgEl = document.createElement("img");
+      imgEl.src = url;
+      imgEl.style.maxWidth = `${IMAGE_MAX_WIDTH}px`;
+      imgEl.style.maxHeight = `${IMAGE_MAX_HEIGHT}px`;
+      imgEl.style.borderRadius = "6px";
+      imgEl.style.display = "block";
+      imgEl.style.margin = "8px auto";
+      card.appendChild(imgEl);
+    } catch {
+      // skip unreadable images
+    }
+  }
 
   // Meta section
   const meta = document.createElement("div");
@@ -444,7 +579,7 @@ export class ExportModal extends Modal {
       ? this.plugin.settings.authorName
       : undefined;
     const showBranding = this.plugin.settings.showBrandingInExport;
-    const cardEl = buildExportCard(this.memo, { authorName, isDarkMode, showBranding });
+    const cardEl = await buildExportCard(this.app, this.memo, { authorName, isDarkMode, showBranding });
 
     // Preview section — keep card at 440px, scale to fit on mobile
     const previewContainer = contentEl.createDiv("memos-export-preview");
@@ -452,23 +587,19 @@ export class ExportModal extends Modal {
     cardWrapper.appendChild(cardEl);
 
     // After layout: scale card to fit container width if needed
-    // Use double-rAF to ensure layout is fully computed
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const containerWidth = previewContainer.clientWidth - 40; // minus padding (20px each side)
-        const cardWidth = 440;
-        if (containerWidth < cardWidth) {
-          const scale = containerWidth / cardWidth;
-          cardEl.style.transform = `scale(${scale})`;
-          cardEl.style.transformOrigin = "top left";
-          const cardHeight = cardEl.offsetHeight;
-          // Wrapper collapses to the scaled visual size
-          cardWrapper.style.width = `${cardWidth * scale}px`;
-          cardWrapper.style.height = `${cardHeight * scale}px`;
-          cardWrapper.style.overflow = "hidden";
-        }
-      });
-    });
+    setTimeout(() => {
+      const containerWidth = previewContainer.clientWidth - 40; // minus padding
+      const cardWidth = 440;
+      if (containerWidth > 0 && containerWidth < cardWidth) {
+        const scale = containerWidth / cardWidth;
+        cardEl.style.transform = `scale(${scale})`;
+        cardEl.style.transformOrigin = "top left";
+        const cardHeight = cardEl.offsetHeight;
+        cardWrapper.style.width = `${cardWidth * scale}px`;
+        cardWrapper.style.height = `${cardHeight * scale}px`;
+        cardWrapper.style.overflow = "hidden";
+      }
+    }, 50);
 
     // Action buttons
     const btnRow = contentEl.createDiv("memos-export-btn-row");
@@ -503,7 +634,7 @@ export class ExportModal extends Modal {
 
   async handleSave(isDarkMode: boolean) {
     try {
-      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
+      const blob = await generateImage(this.app, this.memo, this.getExportOptions(isDarkMode));
       const fname = this.buildFilename();
 
       if (Platform.isMobile) {
@@ -553,7 +684,7 @@ export class ExportModal extends Modal {
 
   async handleCopy(isDarkMode: boolean) {
     try {
-      const blob = await generateImage(this.memo, this.getExportOptions(isDarkMode));
+      const blob = await generateImage(this.app, this.memo, this.getExportOptions(isDarkMode));
 
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": blob }),
@@ -569,6 +700,7 @@ export class ExportModal extends Modal {
   }
 
   onClose() {
-    this.contentEl.empty();
+    // Let Obsidian handle DOM cleanup — avoid synchronous heavy DOM teardown
+    // that causes visible lag when closing the modal.
   }
 }

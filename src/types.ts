@@ -22,7 +22,6 @@ export interface MemosSettings {
   saveFolder: string;        // default: "00-Inbox"
   useFixedTag: boolean;      // default: false
   fixedTag: string;          // default: ""
-  captureNotePath: string;   // default: "Quick Capture.md"
   statsCollapsed: boolean;   // default: false
   authorName: string;        // default: ""
   showAuthorInExport: boolean; // default: false
@@ -37,7 +36,6 @@ export const DEFAULT_SETTINGS: MemosSettings = {
   saveFolder: "00-Inbox",
   useFixedTag: false,
   fixedTag: "",
-  captureNotePath: "Quick Capture.md",
   statsCollapsed: false,
   authorName: "",
   showAuthorInExport: false,

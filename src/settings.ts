@@ -58,19 +58,6 @@ export class MemosSettingTab extends PluginSettingTab {
         );
     }
 
-    new Setting(containerEl)
-      .setName(i18n.captureEntryNote)
-      .setDesc(i18n.captureEntryNoteDesc)
-      .addText((text) =>
-        text
-          .setPlaceholder("Quick Capture.md")
-          .setValue(this.plugin.settings.captureNotePath)
-          .onChange(async (value) => {
-            this.plugin.settings.captureNotePath = value.trim() || "Quick Capture.md";
-            await this.plugin.saveSettings();
-          })
-      );
-
     new Setting(containerEl).setName(i18n.extendedMetadata).setHeading();
 
     new Setting(containerEl)
