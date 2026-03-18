@@ -20,7 +20,8 @@ Quick Memos 是一个 Obsidian 插件，让你在笔记库里像用 Flomo 一样
 几秒钟写下想法，用卡片流浏览，按标签筛选，随机回顾旧灵感。所有数据都是本地 Markdown 文件，完全属于你自己。
 
 主要是为了给手机端📱使用的灵感记录插件，直接从Flomo导入之前的笔记。
-<p><img src="https://github.com/user-attachments/assets/6abc5200-3136-4bb4-bda5-8889ad3527f9" width="300" /></p>
+<p><img src="https://github.com/user-attachments/assets/6abc5200-3136-4bb4-bda5-8889ad3527f9" width="300" /><img width="300" alt="image" src="https://github.com/user-attachments/assets/80b66c9a-856c-4d82-9365-e0ee00a04390" /></p>
+
 
 ### 核心功能
 - **移动端适配** — 支持 iOS 快捷指令入口
