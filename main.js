@@ -1953,15 +1953,6 @@ var MemosPlugin = class extends import_obsidian9.Plugin {
       await this.saveMemo(content, tags, Object.keys(meta).length > 0 ? meta : void 0);
       new import_obsidian9.Notice(i18n.memoSaved);
     });
-    this.registerObsidianProtocolHandler("memo-capture", () => {
-      if (this.app.workspace.layoutReady) {
-        this.activateCaptureView();
-      } else {
-        this.app.workspace.onLayoutReady(() => {
-          this.activateCaptureView();
-        });
-      }
-    });
     this.registerObsidianProtocolHandler("memo-view", () => {
       if (this.app.workspace.layoutReady) {
         this.activateView();

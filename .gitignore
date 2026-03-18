@@ -1,6 +1,7 @@
 node_modules/
 main.js
 *.js.map
+data.json
 
 # CodeBuddy local config
 .codebuddy/

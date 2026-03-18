@@ -69,17 +69,6 @@ export default class MemosPlugin extends Plugin {
       new Notice(i18n.memoSaved);
     });
 
-    // ── URI handler: obsidian://memo-capture → open Capture UI ──
-    this.registerObsidianProtocolHandler("memo-capture", () => {
-      if (this.app.workspace.layoutReady) {
-        this.activateCaptureView();
-      } else {
-        this.app.workspace.onLayoutReady(() => {
-          this.activateCaptureView();
-        });
-      }
-    });
-
     // ── URI handler: obsidian://memo-view → open Memos view ──
     this.registerObsidianProtocolHandler("memo-view", () => {
       if (this.app.workspace.layoutReady) {
