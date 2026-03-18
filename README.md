@@ -20,7 +20,7 @@ Quick Memos 是一个 Obsidian 插件，让你在笔记库里像用 Flomo 一样
 几秒钟写下想法，用卡片流浏览，按标签筛选，随机回顾旧灵感。所有数据都是本地 Markdown 文件，完全属于你自己。
 
 主要是为了给手机端📱使用的灵感记录插件，直接从Flomo导入之前的笔记。
-![IMG_0563](https://github.com/user-attachments/assets/6abc5200-3136-4bb4-bda5-8889ad3527f9)
+<p><img src="https://github.com/user-attachments/assets/6abc5200-3136-4bb4-bda5-8889ad3527f9" width="300" /></p>
 
 ### 核心功能
 - **移动端适配** — 支持 iOS 快捷指令入口
@@ -193,19 +193,13 @@ src/
 A: 默认在 `Memos/` 文件夹，可在设置中修改。每条 memo 是一个独立的 `.md` 文件。
 
 **Q: 手机上能用吗？**
-A: 可以。移动端会自动打开卡片视图，捕获界面适配虚拟键盘。iOS 还可以配合快捷指令实现一键记录。
+A: 可以，专门给移动端适配的。移动端会自动打开卡片视图，捕获界面适配虚拟键盘。iOS 还可以配合快捷指令实现一键记录。
 
 **Q: 如何备份？**
 A: Memo 就是普通 Markdown 文件，用 Obsidian Sync、iCloud、Dropbox 或 Git 同步即可。
 
 **Q: 能和 Dataview 一起用吗？**
 A: 可以。所有 memo 都有 `type: memo` 的 frontmatter，开启心情和来源后还会有 `mood`、`source` 字段，可以用 Dataview 自由查询。
-
----
-
-## 许可证
-
-[MIT](LICENSE) — 自由使用、修改和分发。
 
 ---
 
