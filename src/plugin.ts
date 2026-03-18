@@ -1,4 +1,5 @@
 import {
+  addIcon,
   Notice,
   Platform,
   Plugin,
@@ -24,8 +25,8 @@ export default class MemosPlugin extends Plugin {
     this.registerView(VIEW_TYPE_CAPTURE, (leaf) => new CaptureItemView(leaf, this));
 
     // Ribbon icon → open Memos view (fullscreen on mobile)
-    const MEMO_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="12" width="56" height="72" rx="6"/><path d="M30 36h28M30 50h20"/><path d="M72 12l-16 0"/><path d="M62 52l-4 18 8-6 8 6-4-18" fill="currentColor" stroke-width="4"/><path d="M66 38v-2a8 8 0 0 1 16 0v6c0 3-2 5.5-4.5 7L70 54" stroke-width="5"/></svg>`;
-    this.addRibbonIcon(MEMO_ICON, i18n.openMemosView, () => {
+    addIcon("quick-memos", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="14" width="50" height="68" rx="6"/><line x1="20" y1="34" x2="44" y2="34"/><line x1="20" y1="46" x2="38" y2="46"/><line x1="20" y1="58" x2="42" y2="58"/><rect x="70" y="14" width="14" height="52" rx="3"/><path d="M70 66l7 14 7-14" fill="currentColor"/><line x1="70" y1="24" x2="84" y2="24" stroke-width="4"/></svg>`);
+    this.addRibbonIcon("quick-memos", i18n.openMemosView, () => {
       this.activateView();
     });
 

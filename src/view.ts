@@ -90,16 +90,33 @@ export class MemosView extends ItemView {
     const toolbar = this.contentEl.createDiv("memos-toolbar");
     this.renderToolbar(toolbar);
 
-    // Stats section (heatmap + numbers) — always shows global data
-    const statsContainer = this.contentEl.createDiv();
-    const stats = computeStats(this.memos);
-    renderStatsSection(statsContainer, stats, this.plugin.settings.statsCollapsed, {
-      onToggle: () => this.handleStatsToggle(),
-      onDateClick: (date) => this.handleDateFilter(date),
-    });
+    // On mobile: stats + cards share a single scroll container so the
+    // heatmap scrolls away while the toolbar stays pinned at the top.
+    // On desktop: stats stays fixed above the scrollable card list.
+    const isMobile = this.contentEl.closest(".is-mobile") !== null;
 
-    const cardsContainer = this.contentEl.createDiv("memos-cards-container");
-    this.renderCards(cardsContainer);
+    if (isMobile) {
+      const scrollContainer = this.contentEl.createDiv("memos-cards-container");
+
+      const statsContainer = scrollContainer.createDiv();
+      const stats = computeStats(this.memos);
+      renderStatsSection(statsContainer, stats, this.plugin.settings.statsCollapsed, {
+        onToggle: () => this.handleStatsToggle(),
+        onDateClick: (date) => this.handleDateFilter(date),
+      });
+
+      this.renderCards(scrollContainer);
+    } else {
+      const statsContainer = this.contentEl.createDiv();
+      const stats = computeStats(this.memos);
+      renderStatsSection(statsContainer, stats, this.plugin.settings.statsCollapsed, {
+        onToggle: () => this.handleStatsToggle(),
+        onDateClick: (date) => this.handleDateFilter(date),
+      });
+
+      const cardsContainer = this.contentEl.createDiv("memos-cards-container");
+      this.renderCards(cardsContainer);
+    }
   }
 
   async loadMemos() {

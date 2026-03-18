@@ -1075,6 +1075,13 @@
   opacity: 1;
 }
 
+/* Mobile: stats section lives inside the scroll container,
+   so remove horizontal margin (container padding handles it). */
+.is-mobile .memos-stats-section {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 /* =============================================================================
    Export Modal
    ============================================================================= */
