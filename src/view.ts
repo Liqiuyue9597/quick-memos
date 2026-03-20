@@ -65,7 +65,25 @@ export class MemosView extends ItemView {
     );
     this.registerEvent(
       this.app.vault.on("delete", (file) => {
-        if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
+        if (file instanceof TFile && file.path.startsWith(folderPrefix)) {
+          // If the deleted file is open in an editor tab, navigate back to
+          // Memos view.  We do NOT call leaf.detach() ourselves — Obsidian's
+          // own delete handling will close / repurpose the leaf internally.
+          // Calling detach() here would race with Obsidian and cause
+          // "Cannot read properties of null (reading 'children')" because
+          // Obsidian's internal handler tries to access leaf.parent.children
+          // on a leaf we already detached.
+          const hasOpenLeaf = this.app.workspace
+            .getLeavesOfType("markdown")
+            .some((leaf) => {
+              const viewFile = (leaf.view as { file?: TFile }).file;
+              return viewFile?.path === file.path;
+            });
+          if (hasOpenLeaf) {
+            this.plugin.activateView();
+          }
+          this.debouncedRefresh();
+        }
       })
     );
     // Listen to metadataCache "changed" instead of vault "modify".

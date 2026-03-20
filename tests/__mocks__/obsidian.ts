@@ -124,6 +124,8 @@ export class WorkspaceLeaf {
   openFile(_file: TFile) {
     return Promise.resolve();
   }
+
+  detach() {}
 }
 
 // ---------------------------------------------------------------------------

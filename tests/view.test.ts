@@ -21,6 +21,7 @@ function createMockPlugin(overrides?: Partial<MemosSettings>): MemosPlugin {
     settings: { ...DEFAULT_SETTINGS, ...overrides },
     saveSettings: vi.fn().mockResolvedValue(undefined),
     activateCaptureView: vi.fn(),
+    activateView: vi.fn().mockResolvedValue(undefined),
   } as unknown as MemosPlugin;
 }
 
@@ -525,5 +526,96 @@ describe("onClose Cleanup", () => {
 
     vi.advanceTimersByTime(1000);
     expect(refreshSpy).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// g) Delete Navigation
+// ---------------------------------------------------------------------------
+describe("Delete Navigation", () => {
+  let view: MemosView;
+  let app: App;
+  let plugin: MemosPlugin;
+  let refreshSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(async () => {
+    vi.useFakeTimers();
+    app = new App();
+    plugin = createMockPlugin({ saveFolder: "Memos" });
+    view = createView(plugin, app);
+    refreshSpy = vi.spyOn(view, "refresh").mockResolvedValue(undefined);
+    await view.onOpen();
+    refreshSpy.mockClear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("activates Memos view when deleted file is open in an editor", () => {
+    const file = createMemoFile("Memos/memo-1.md", "memo-1.md");
+
+    // Create a mock leaf that has the deleted file open
+    const mockLeaf = new WorkspaceLeaf(app);
+    mockLeaf.view = { file };
+
+    vi.spyOn(app.workspace, "getLeavesOfType").mockReturnValue([mockLeaf]);
+
+    (app.vault as Vault).trigger("delete", file);
+
+    expect(plugin.activateView).toHaveBeenCalled();
+  });
+
+  it("does NOT navigate when deleted file is not open in any editor", () => {
+    const file = createMemoFile("Memos/memo-1.md", "memo-1.md");
+
+    // No leaves have this file open
+    vi.spyOn(app.workspace, "getLeavesOfType").mockReturnValue([]);
+
+    (app.vault as Vault).trigger("delete", file);
+
+    expect(plugin.activateView).not.toHaveBeenCalled();
+  });
+
+  it("activates Memos view only once even with multiple tabs open", () => {
+    const file = createMemoFile("Memos/memo-1.md", "memo-1.md");
+
+    const leaf1 = new WorkspaceLeaf(app);
+    leaf1.view = { file };
+
+    const leaf2 = new WorkspaceLeaf(app);
+    leaf2.view = { file };
+
+    vi.spyOn(app.workspace, "getLeavesOfType").mockReturnValue([leaf1, leaf2]);
+
+    (app.vault as Vault).trigger("delete", file);
+
+    // activateView is called exactly once regardless of how many tabs match
+    expect(plugin.activateView).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT navigate for files outside save folder", () => {
+    const file = createMemoFile("Other/note.md", "note.md");
+
+    vi.spyOn(app.workspace, "getLeavesOfType").mockReturnValue([]);
+
+    (app.vault as Vault).trigger("delete", file);
+
+    expect(plugin.activateView).not.toHaveBeenCalled();
+  });
+
+  it("still calls debouncedRefresh even when navigating", () => {
+    const file = createMemoFile("Memos/memo-1.md", "memo-1.md");
+
+    const mockLeaf = new WorkspaceLeaf(app);
+    mockLeaf.view = { file };
+
+    vi.spyOn(app.workspace, "getLeavesOfType").mockReturnValue([mockLeaf]);
+
+    (app.vault as Vault).trigger("delete", file);
+
+    // debouncedRefresh fires after 300ms
+    vi.advanceTimersByTime(300);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
   });
 });

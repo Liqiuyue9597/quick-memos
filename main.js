@@ -998,8 +998,16 @@ var _MemosView = class extends import_obsidian5.ItemView {
     );
     this.registerEvent(
       this.app.vault.on("delete", (file) => {
-        if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix))
+        if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix)) {
+          const hasOpenLeaf = this.app.workspace.getLeavesOfType("markdown").some((leaf) => {
+            const viewFile = leaf.view.file;
+            return (viewFile == null ? void 0 : viewFile.path) === file.path;
+          });
+          if (hasOpenLeaf) {
+            this.plugin.activateView();
+          }
           this.debouncedRefresh();
+        }
       })
     );
     this.registerEvent(
