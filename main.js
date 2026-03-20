@@ -1003,7 +1003,7 @@ var _MemosView = class extends import_obsidian5.ItemView {
       })
     );
     this.registerEvent(
-      this.app.vault.on("modify", (file) => {
+      this.app.metadataCache.on("changed", (file) => {
         if (file instanceof import_obsidian5.TFile && file.path.startsWith(folderPrefix))
           this.debouncedRefresh();
       })

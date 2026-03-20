@@ -68,8 +68,13 @@ export class MemosView extends ItemView {
         if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
       })
     );
+    // Listen to metadataCache "changed" instead of vault "modify".
+    // When a memo file is edited and saved, vault "modify" fires before
+    // metadataCache has re-parsed the frontmatter, so refresh() would
+    // read stale cache data.  The "changed" event fires only after the
+    // cache is up-to-date, ensuring we always render the latest content.
     this.registerEvent(
-      this.app.vault.on("modify", (file) => {
+      this.app.metadataCache.on("changed", (file) => {
         if (file instanceof TFile && file.path.startsWith(folderPrefix)) this.debouncedRefresh();
       })
     );
