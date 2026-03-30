@@ -3,35 +3,9 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, FuzzySuggestModal, TFile, App
 import { VIEW_TYPE_CAPTURE } from "./constants";
 import { extractInlineTags, parseTags } from "./utils";
 import { loadTagSuggestions } from "./tag-suggestions";
+import { saveImageAttachment } from "./image-attachment";
 import type MemosPlugin from "./plugin";
 import { i18n, t } from "./i18n";
-
-const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
-
-/** Modal that lets the user pick an image file from the vault. */
-export class ImageSuggestModal extends FuzzySuggestModal<TFile> {
-  private onChoose: (file: TFile) => void;
-
-  constructor(app: App, onChoose: (file: TFile) => void) {
-    super(app);
-    this.onChoose = onChoose;
-    this.setPlaceholder(i18n.searchImages);
-  }
-
-  getItems(): TFile[] {
-    return this.app.vault.getFiles().filter((f) =>
-      IMAGE_EXTENSIONS.includes(f.extension.toLowerCase())
-    );
-  }
-
-  getItemText(file: TFile): string {
-    return file.path;
-  }
-
-  onChooseItem(file: TFile): void {
-    this.onChoose(file);
-  }
-}
 
 /** Modal that lets the user pick a note to insert as [[wikilink]]. */
 export class NoteSuggestModal extends FuzzySuggestModal<TFile> {
@@ -77,6 +51,8 @@ export class CaptureItemView extends ItemView {
   private selectedMood = "";
   /** Selected source (string or empty). */
   private selectedSource = "";
+  /** Hidden file picker used to choose an image on mobile and desktop. */
+  private imageInput!: HTMLInputElement;
   /** Suggested tags shown above the add button. */
   private suggestedTags: string[] = [];
   /** Invalidates async suggestion loads when the view closes/reopens. */
@@ -189,10 +165,18 @@ export class CaptureItemView extends ItemView {
       attr: { "aria-label": i18n.insertImage },
     });
     setIcon(imageBtn, "image");
+    this.imageInput = document.createElement("input");
+    this.imageInput.type = "file";
+    this.imageInput.accept = "image/*";
+    this.imageInput.multiple = false;
+    this.imageInput.style.display = "none";
+    this.imageInput.addEventListener("change", () => {
+      void this.handleImageSelection();
+    });
+    container.appendChild(this.imageInput);
     imageBtn.addEventListener("click", () => {
-      new ImageSuggestModal(this.app, (file) => {
-        this.insertAtCursor(`![[${file.name}]]`);
-      }).open();
+      this.imageInput.value = "";
+      this.imageInput.click();
     });
 
     // Tag shortcut button (focuses the add-tag input)
@@ -355,6 +339,24 @@ export class CaptureItemView extends ItemView {
     } catch (_err) {
       // Suggestions are best-effort; the capture flow should still work even if
       // the vault scan fails for some reason.
+    }
+  }
+
+  /** Save the selected image into the attachment location and insert an embed. */
+  private async handleImageSelection() {
+    const selected = this.imageInput.files?.[0];
+    if (!selected) return;
+
+    try {
+      const sourcePath = this.app.workspace.getActiveFile()?.path ?? "";
+      const attachmentPath = await saveImageAttachment(this.app, selected, sourcePath);
+      this.insertAtCursor(`![[${attachmentPath}]]`);
+    } catch (err) {
+      new Notice(
+        t("failedToSave", { err: err instanceof Error ? err.message : String(err) })
+      );
+    } finally {
+      this.imageInput.value = "";
     }
   }
 
