@@ -221,6 +221,17 @@ export class Modal {
   onClose() {}
 }
 
+export class FuzzySuggestModal<T> extends Modal {
+  setPlaceholder(_text: string) {}
+  getItems(): T[] {
+    return [];
+  }
+  getItemText(_item: T): string {
+    return "";
+  }
+  onChooseItem(_item: T): void {}
+}
+
 export class Notice {
   constructor(_message: string) {}
 }

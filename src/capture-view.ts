@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, FuzzySuggestModal, TFile, App
 
 import { VIEW_TYPE_CAPTURE } from "./constants";
 import { extractInlineTags, parseTags } from "./utils";
+import { loadTagSuggestions } from "./tag-suggestions";
 import type MemosPlugin from "./plugin";
 import { i18n, t } from "./i18n";
 
@@ -76,6 +77,10 @@ export class CaptureItemView extends ItemView {
   private selectedMood = "";
   /** Selected source (string or empty). */
   private selectedSource = "";
+  /** Suggested tags shown above the add button. */
+  private suggestedTags: string[] = [];
+  /** Invalidates async suggestion loads when the view closes/reopens. */
+  private tagSuggestionLoadToken = 0;
   /** Prevents multiple wikilink modals from opening simultaneously. */
   private wikilinkModalOpen = false;
 
@@ -131,8 +136,10 @@ export class CaptureItemView extends ItemView {
 
     // ── Tags area ──
     this.tags = [];
+    this.suggestedTags = [];
     this.tagsContainer = card.createDiv("memos-capture-card-tags");
     this.renderTags();
+    void this.refreshTagSuggestions();
 
     // ── Mood picker (optional) ──
     if (this.plugin.settings.enableMood) {
@@ -229,6 +236,7 @@ export class CaptureItemView extends ItemView {
 
   async onClose() {
     await Promise.resolve();
+    this.tagSuggestionLoadToken += 1;
     this.contentEl.empty();
   }
 
@@ -247,6 +255,19 @@ export class CaptureItemView extends ItemView {
       });
       removeBtn.addEventListener("click", () => {
         this.tags = this.tags.filter((t) => t !== tag);
+        this.renderTags();
+      });
+    }
+
+    const visibleSuggestions = this.suggestedTags.filter((tag) => !this.tags.includes(tag));
+    for (const tag of visibleSuggestions) {
+      const pill = this.tagsContainer.createDiv(
+        "memos-capture-card-tag memos-capture-card-tag-suggestion"
+      );
+      pill.createSpan({ text: `#${tag}` });
+      pill.addEventListener("click", () => {
+        if (this.tags.includes(tag)) return;
+        this.tags.push(tag);
         this.renderTags();
       });
     }
@@ -308,6 +329,33 @@ export class CaptureItemView extends ItemView {
     input.addEventListener("blur", () => {
       commit();
     });
+  }
+
+  /** Load tag suggestions from the memo folder and refresh the chip row. */
+  private async refreshTagSuggestions() {
+    const loadToken = ++this.tagSuggestionLoadToken;
+    const excludedTags =
+      this.plugin.settings.useFixedTag && this.plugin.settings.fixedTag
+        ? [this.plugin.settings.fixedTag]
+        : [];
+
+    try {
+      const suggestions = await loadTagSuggestions(
+        this.app,
+        this.plugin.settings.saveFolder,
+        {
+          limit: 6,
+          excludedTags,
+        }
+      );
+
+      if (loadToken !== this.tagSuggestionLoadToken) return;
+      this.suggestedTags = suggestions;
+      this.renderTags();
+    } catch (_err) {
+      // Suggestions are best-effort; the capture flow should still work even if
+      // the vault scan fails for some reason.
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────────
