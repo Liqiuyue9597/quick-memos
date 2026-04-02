@@ -53,7 +53,7 @@ export class ItemView extends Component {
   app: App;
   leaf: WorkspaceLeaf;
 
-  contentEl: Record<string, Function> & { closest: Function; empty: Function; addClass: Function; createDiv: Function; createEl: Function; createSpan: Function; querySelector: Function; appendText: Function };
+  contentEl: Record<string, Function> & { closest: Function; empty: Function; addClass: Function; createDiv: Function; createEl: Function; createSpan: Function; querySelector: Function; appendText: Function; appendChild: Function };
 
   constructor(leaf: WorkspaceLeaf) {
     super();
@@ -70,6 +70,7 @@ export class ItemView extends Component {
       closest: () => null,
       querySelector: () => null,
       appendText: () => stubEl,
+      appendChild: () => stubEl,
       setText: () => stubEl,
       addEventListener: () => {},
       dataset: {},
@@ -143,6 +144,10 @@ export class Workspace extends Events {
 
   revealLeaf(_leaf: WorkspaceLeaf) {}
 
+  getActiveFile(): TFile | null {
+    return null;
+  }
+
   openLinkText(_linktext: string, _sourcePath: string, _newLeaf?: boolean) {
     return Promise.resolve();
   }
@@ -172,6 +177,10 @@ export class Vault extends Events {
     return Promise.resolve(new TFile());
   }
 
+  createBinary(_path: string, _content: ArrayBuffer): Promise<TFile> {
+    return Promise.resolve(new TFile());
+  }
+
   createFolder(_path: string): Promise<void> {
     return Promise.resolve();
   }
@@ -190,6 +199,12 @@ export class MetadataCache extends Events {
   }
 }
 
+export class FileManager {
+  getAvailablePathForAttachment(filename: string, _sourcePath?: string): Promise<string> {
+    return Promise.resolve(filename);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
@@ -198,11 +213,13 @@ export class App {
   vault: Vault;
   metadataCache: MetadataCache;
   workspace: Workspace;
+  fileManager: FileManager;
 
   constructor() {
     this.vault = new Vault();
     this.metadataCache = new MetadataCache();
     this.workspace = new Workspace();
+    this.fileManager = new FileManager();
   }
 }
 
@@ -219,6 +236,17 @@ export class Modal {
   close() {}
   onOpen() {}
   onClose() {}
+}
+
+export class FuzzySuggestModal<T> extends Modal {
+  setPlaceholder(_text: string) {}
+  getItems(): T[] {
+    return [];
+  }
+  getItemText(_item: T): string {
+    return "";
+  }
+  onChooseItem(_item: T): void {}
 }
 
 export class Notice {

@@ -24,9 +24,11 @@ Primarily designed as a mobile-friendly 📱 inspiration capture plugin, with di
 ### Features
 
 - **Mobile Ready** — Supports iOS Shortcuts for quick access
+- **Image Insert** — On iOS, open Photos and save into the vault’s attachment folder automatically; on desktop, use the native attachment/file picker flow
 - **Image Export** — Export any memo as a beautiful PNG card with optional author name and branding
 - **Canvas Export** — Send filtered memos to an Obsidian Canvas file, grouped by tag
 - **Right-Click to Memo** — Select any text, right-click → Save as Memo
+- **Tag Suggestions** — Show recent + frequent tags first when capturing, so you can tap instead of typing
 - **Wikilink Support** — Type `[[` in the capture view to search and insert note links
 - **Transclusion Styling** — `![[memo]]` embeds in other notes are auto-styled as cards
 - **Flomo Import** — One-click import from Flomo HTML export, preserving timestamps and tags
@@ -83,6 +85,7 @@ Enable in Obsidian: **Settings → Community plugins → Enable Quick Memos**
 | Open capture view | Click ribbon icon 📝 / Command palette → `Memos: Quick capture` |
 | Save memo | `Ctrl+Enter` or click Save button |
 | Open card view | Command palette → `Memos: Open Memos view` |
+| Insert image | Click the image button in the capture view; iOS opens Photos, desktop opens a file picker |
 | Filter by tag | Click any tag |
 | Filter by date | Click a heatmap cell |
 | Clear filter | Click × on the filter pill |
@@ -114,6 +117,10 @@ Had a great idea for a new feature today! #excited
 - `type: memo` — Required, used for identification
 - `tags` — Auto-merged from frontmatter and inline `#tags`
 - `mood` / `source` — Optional, enable in settings
+
+### Tag Suggestions
+
+In the quick capture view, the `Add tag` area shows recent and frequently used tags first. Tap one of the suggested tags to add it instantly; if nothing fits, use `Add tag` to type a new one.
 
 ---
 

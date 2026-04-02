@@ -508,6 +508,18 @@
   color: var(--text-normal);
 }
 
+.memos-capture-card-tag-suggestion {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.memos-capture-card-tag-suggestion:hover {
+  background: var(--background-primary-alt);
+  color: var(--text-normal);
+}
+
 .memos-capture-card-tag-remove {
   cursor: pointer;
   color: var(--text-faint);
