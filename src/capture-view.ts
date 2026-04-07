@@ -170,7 +170,7 @@ export class CaptureItemView extends ItemView {
     this.imageInput.accept = "image/*";
     this.imageInput.multiple = false;
     this.imageInput.style.display = "none";
-    this.imageInput.addEventListener("change", () => {
+    this.registerDomEvent(this.imageInput, "change", () => {
       void this.handleImageSelection();
     });
     container.appendChild(this.imageInput);
