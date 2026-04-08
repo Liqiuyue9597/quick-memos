@@ -169,7 +169,7 @@ export class CaptureItemView extends ItemView {
     this.imageInput.type = "file";
     this.imageInput.accept = "image/*";
     this.imageInput.multiple = false;
-    this.imageInput.style.display = "none";
+    this.imageInput.addClass("memos-hidden");
     this.registerDomEvent(this.imageInput, "change", () => {
       void this.handleImageSelection();
     });
@@ -336,7 +336,7 @@ export class CaptureItemView extends ItemView {
       if (loadToken !== this.tagSuggestionLoadToken) return;
       this.suggestedTags = suggestions;
       this.renderTags();
-    } catch (_err) {
+    } catch {
       // Suggestions are best-effort; the capture flow should still work even if
       // the vault scan fails for some reason.
     }

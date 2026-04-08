@@ -17,6 +17,12 @@ export default defineConfig([
     },
     rules: {
       "obsidianmd/sample-names": "off",
+      // Obsidian review bot 会检查这些，本地也要拦住
+      "@typescript-eslint/require-await": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   {

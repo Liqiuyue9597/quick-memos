@@ -76,7 +76,7 @@ export function rankTagSuggestions(usages: TagUsage[], limit = 4): string[] {
  * Scan a memo folder and build a short list of tag suggestions from all
  * `type: memo` files found there.
  */
-export async function loadTagSuggestions(
+export function loadTagSuggestions(
   app: App,
   folderPath: string,
   options: TagSuggestionOptions = {}
